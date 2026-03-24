@@ -20,29 +20,32 @@ const PORT = process.env.PORT || 3000;
 const rooms = new Map();
 const clients = new Map();
 
+const VIDEO_CONFIG = {
+  playerAWin: [
+    "win_A_1.mp4","win_A_2.mp4","win_A_3.mp4","win_A_4.mp4","win_A_5.mp4",
+    "win_A_6.mp4","win_A_7.mp4","win_A_8.mp4","win_A_9.mp4","win_A_10.mp4"
+  ],
+  playerBWin: [
+    "win_B_1.mp4","win_B_2.mp4","win_B_3.mp4","win_B_4.mp4","win_B_5.mp4",
+    "win_B_6.mp4","win_B_7.mp4","win_B_8.mp4","win_B_9.mp4","win_B_10.mp4"
+  ],
+  draw: [
+    "draw_1.mp4","draw_2.mp4","draw_3.mp4","draw_4.mp4","draw_5.mp4",
+    "draw_6.mp4","draw_7.mp4","draw_8.mp4","draw_9.mp4","draw_10.mp4"
+  ],
+  idle: [
+    "idle_1.mp4","idle_2.mp4","idle_3.mp4","idle_4.mp4","idle_5.mp4",
+    "idle_6.mp4","idle_7.mp4","idle_8.mp4","idle_9.mp4","idle_10.mp4"
+  ]
+};
+
+function getRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 function loadQuestions() {
   const filePath = path.join(__dirname, "questions.json");
-  const raw = fs.readFileSync(filePath, "utf8");
-  const data = JSON.parse(raw);
-
-  if (!data.questions || !Array.isArray(data.questions) || data.questions.length === 0) {
-    throw new Error("questions.json invalide ou vide");
-  }
-
-  for (const q of data.questions) {
-    if (
-      typeof q.questionText !== "string" ||
-      !Array.isArray(q.answers) ||
-      q.answers.length !== 4 ||
-      !Number.isInteger(q.correctAnswer) ||
-      q.correctAnswer < 0 ||
-      q.correctAnswer > 3
-    ) {
-      throw new Error("Une question dans questions.json est invalide");
-    }
-  }
-
-  return data.questions;
+  return JSON.parse(fs.readFileSync(filePath, "utf8")).questions;
 }
 
 const masterQuestions = loadQuestions();
@@ -52,297 +55,162 @@ function cloneQuestions() {
 }
 
 function send(ws, data) {
-  if (ws.readyState === WebSocket.OPEN) {
+  if (ws.readyState === WebSocket.OPEN)
     ws.send(JSON.stringify(data));
-  }
 }
 
-function broadcastToRoom(roomCode, data) {
-  const room = rooms.get(roomCode);
-  if (!room) return;
-
-  for (const slot of ["A", "B"]) {
-    const player = room.players[slot];
-    if (player?.ws?.readyState === WebSocket.OPEN) {
-      player.ws.send(JSON.stringify(data));
-    }
-  }
-}
-
-function generateRoomCode(length = 4) {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
-  for (let i = 0; i < length; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-}
-
-function createUniqueRoomCode() {
-  let code;
-  do {
-    code = generateRoomCode(4);
-  } while (rooms.has(code));
-  return code;
-}
-
-function generateHostToken() {
-  return crypto.randomBytes(24).toString("hex");
-}
-
-function sanitizeRoomCode(value) {
-  return String(value || "").trim().toUpperCase();
-}
-
-function startNextQuestion(room) {
-  room.currentQuestionIndex += 1;
-
-  if (room.currentQuestionIndex >= room.questions.length) {
-    broadcastToRoom(room.code, {
-      type: "QUIZ_FINISHED",
-      roomCode: room.code,
-      totalQuestions: room.questions.length
-    });
-    return;
-  }
-
-  const q = room.questions[room.currentQuestionIndex];
-
-  room.answers.A = null;
-  room.answers.B = null;
-  room.roundId += 1;
-  room.currentCorrectAnswer = q.correctAnswer;
-
-  broadcastToRoom(room.code, {
-    type: "QUESTION_STARTED",
-    roomCode: room.code,
-    roundId: room.roundId,
-    questionIndex: room.currentQuestionIndex,
-    totalQuestions: room.questions.length,
-    questionText: q.questionText,
-    answers: q.answers,
-    startTime: Date.now()
+function broadcast(room, data) {
+  ["A", "B"].forEach(p => {
+    const player = room.players[p];
+    if (player && !player.isBot)
+      send(player.ws, data);
   });
 }
 
 function computeRoundResult(room) {
   const A = room.answers.A;
   const B = room.answers.B;
-  const correct = room.currentCorrectAnswer;
+  const correct = room.correct;
 
-  const Aok = A && A.answer === correct;
-  const Bok = B && B.answer === correct;
+  const Aok = A.answer === correct;
+  const Bok = B.answer === correct;
 
-  let roundWinner = "draw";
-  let displayText = "MATCH NUL";
+  let winner = "draw";
+  let text = "MATCH NUL";
 
   if (Aok && !Bok) {
-    roundWinner = "A";
-    displayText = "JOUEUR A GAGNE";
+    winner = "A";
+    text = "JOUEUR A GAGNE";
   } else if (Bok && !Aok) {
-    roundWinner = "B";
-    displayText = "JOUEUR B GAGNE";
+    winner = "B";
+    text = "JOUEUR B GAGNE";
   } else if (Aok && Bok) {
     if (A.time < B.time) {
-      roundWinner = "A";
-      displayText = "JOUEUR A GAGNE";
+      winner = "A";
+      text = "JOUEUR A GAGNE";
     } else if (B.time < A.time) {
-      roundWinner = "B";
-      displayText = "JOUEUR B GAGNE";
-    } else {
-      roundWinner = "draw";
-      displayText = "MATCH NUL";
+      winner = "B";
+      text = "JOUEUR B GAGNE";
     }
   }
 
-  broadcastToRoom(room.code, {
+  let currentVideo;
+  if (winner === "A") currentVideo = getRandom(VIDEO_CONFIG.playerAWin);
+  else if (winner === "B") currentVideo = getRandom(VIDEO_CONFIG.playerBWin);
+  else currentVideo = getRandom(VIDEO_CONFIG.draw);
+
+  const preloadVideo = getRandom(VIDEO_CONFIG.idle);
+
+  broadcast(room, {
     type: "ROUND_RESULT",
-    roomCode: room.code,
-    roundId: room.roundId,
-    questionIndex: room.currentQuestionIndex,
-    roundWinner: roundWinner,
-    displayText: displayText,
-    playerA: {
-      answer: A.answer,
-      time: A.time,
-      correct: Aok
-    },
-    playerB: {
-      answer: B.answer,
-      time: B.time,
-      correct: Bok
-    }
+    displayText: text,
+    currentVideo,
+    preloadVideo
   });
 
-  setTimeout(() => {
-    startNextQuestion(room);
-  }, 2000);
+  setTimeout(() => startQuestion(room), 2000);
+}
+
+function startQuestion(room) {
+  room.index++;
+
+  if (room.index >= room.questions.length) {
+    broadcast(room, { type: "QUIZ_FINISHED" });
+    return;
+  }
+
+  const q = room.questions[room.index];
+
+  room.correct = q.correctAnswer;
+  room.answers = { A: null, B: null };
+
+  broadcast(room, {
+    type: "QUESTION_STARTED",
+    questionText: q.questionText,
+    answers: q.answers
+  });
+
+  if (room.isSolo) {
+    const delay = Math.random() * 2 + 1;
+    setTimeout(() => {
+      room.answers.B = {
+        answer: Math.floor(Math.random() * 4),
+        time: delay
+      };
+
+      if (room.answers.A) computeRoundResult(room);
+    }, delay * 1000);
+  }
+}
+
+function createRoom(ws, solo) {
+  const code = crypto.randomBytes(2).toString("hex").toUpperCase();
+
+  const room = {
+    code,
+    isSolo: solo,
+    players: {
+      A: { ws },
+      B: solo ? { isBot: true } : null
+    },
+    questions: cloneQuestions(),
+    index: -1,
+    answers: {}
+  };
+
+  rooms.set(code, room);
+  clients.set(ws, { room: code, id: "A" });
+
+  send(ws, { type: "ROOM_CREATED", roomCode: code });
+
+  if (solo) {
+    broadcast(room, { type: "BATTLE_READY" });
+    setTimeout(() => startQuestion(room), 1000);
+  }
 }
 
 wss.on("connection", (ws) => {
-  console.log("Client connected");
-  clients.set(ws, { roomCode: null, playerId: null });
+  clients.set(ws, {});
 
-  send(ws, { type: "CONNECTED" });
+  ws.on("message", (msg) => {
+    const data = JSON.parse(msg);
 
-  ws.on("message", (raw) => {
-    let data;
+    if (data.type === "CREATE_SOLO_BATTLE")
+      return createRoom(ws, true);
 
-    try {
-      data = JSON.parse(raw.toString());
-    } catch {
-      send(ws, { type: "ERROR", message: "Invalid JSON" });
-      return;
-    }
-
-    if (data.type === "CREATE_BATTLE") {
-      const roomCode = createUniqueRoomCode();
-      const hostToken = generateHostToken();
-
-      const room = {
-        code: roomCode,
-        hostToken: hostToken,
-        players: {
-          A: { ws },
-          B: null
-        },
-        questions: cloneQuestions(),
-        currentQuestionIndex: -1,
-        currentCorrectAnswer: 0,
-        roundId: 0,
-        answers: {
-          A: null,
-          B: null
-        }
-      };
-
-      rooms.set(roomCode, room);
-      clients.set(ws, { roomCode, playerId: "A" });
-
-      send(ws, {
-        type: "ROOM_CREATED",
-        roomCode,
-        playerId: "A",
-        hostToken
-      });
-
-      return;
-    }
+    if (data.type === "CREATE_BATTLE")
+      return createRoom(ws, false);
 
     if (data.type === "JOIN_BATTLE") {
-      const roomCode = sanitizeRoomCode(data.roomCode);
-      const room = rooms.get(roomCode);
-
-      if (!room) {
-        send(ws, { type: "ERROR", message: "Room introuvable" });
-        return;
-      }
-
-      if (room.players.B) {
-        send(ws, { type: "ERROR", message: "Room complète" });
-        return;
-      }
+      const room = rooms.get(data.roomCode);
+      if (!room || room.players.B) return;
 
       room.players.B = { ws };
-      clients.set(ws, { roomCode, playerId: "B" });
+      clients.set(ws, { room: data.roomCode, id: "B" });
 
-      send(ws, {
-        type: "ROOM_JOINED",
-        roomCode,
-        playerId: "B"
-      });
-
-      broadcastToRoom(roomCode, {
-        type: "BATTLE_READY",
-        roomCode
-      });
-
-      setTimeout(() => {
-        startNextQuestion(room);
-      }, 1000);
-
-      return;
+      broadcast(room, { type: "BATTLE_READY" });
+      setTimeout(() => startQuestion(room), 1000);
     }
 
     if (data.type === "ANSWER") {
       const info = clients.get(ws);
+      const room = rooms.get(info.room);
 
-      if (!info || !info.roomCode || !info.playerId) {
-        send(ws, { type: "ERROR", message: "Pas dans une room" });
-        return;
-      }
-
-      const room = rooms.get(info.roomCode);
-
-      if (!room) {
-        send(ws, { type: "ERROR", message: "Room introuvable" });
-        return;
-      }
-
-      if (!Number.isInteger(data.answer) || data.answer < 0 || data.answer > 3) {
-        send(ws, { type: "ERROR", message: "Réponse invalide" });
-        return;
-      }
-
-      const time = Number(data.time);
-      if (!Number.isFinite(time) || time < 0) {
-        send(ws, { type: "ERROR", message: "Temps invalide" });
-        return;
-      }
-
-      if (room.answers[info.playerId] !== null) {
-        send(ws, { type: "ERROR", message: "Réponse déjà envoyée" });
-        return;
-      }
-
-      room.answers[info.playerId] = {
+      room.answers[info.id] = {
         answer: data.answer,
-        time: time
+        time: data.time
       };
 
-      broadcastToRoom(room.code, {
-        type: "ANSWER_RECEIVED",
-        roomCode: room.code,
-        roundId: room.roundId,
-        playerId: info.playerId
-      });
-
-      if (room.answers.A && room.answers.B) {
+      if (room.answers.A && room.answers.B)
         computeRoundResult(room);
-      }
-
-      return;
     }
-
-    send(ws, { type: "ERROR", message: "Unknown message type" });
   });
 
   ws.on("close", () => {
-    const info = clients.get(ws);
-
-    if (info && info.roomCode) {
-      const room = rooms.get(info.roomCode);
-
-      if (room && info.playerId && room.players[info.playerId]?.ws === ws) {
-        room.players[info.playerId] = null;
-
-        broadcastToRoom(room.code, {
-          type: "PLAYER_LEFT",
-          roomCode: room.code,
-          playerId: info.playerId
-        });
-      }
-
-      if (room && !room.players.A && !room.players.B) {
-        rooms.delete(room.code);
-      }
-    }
-
     clients.delete(ws);
-    console.log("Client disconnected");
   });
 });
 
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log("Server running on port", PORT);
 });
