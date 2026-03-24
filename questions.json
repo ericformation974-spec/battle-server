@@ -1,0 +1,19 @@
+{
+  "questions": [
+    {
+      "questionText": "Quelle est la capitale du Japon ?",
+      "answers": ["Pékin", "Tokyo", "Séoul", "Bangkok"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "2 + 2 = ?",
+      "answers": ["3", "4", "5", "6"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Quelle couleur obtient-on avec bleu + jaune ?",
+      "answers": ["Vert", "Rouge", "Violet", "Orange"],
+      "correctAnswer": 0
+    }
+  ]
+}
