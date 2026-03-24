@@ -383,54 +383,55 @@ wss.on("connection", (ws) => {
         return;
       }
 
-      if (data.type === "ANSWER") {
-        const info = clients.get(ws);
-        if (!info || !info.room || !info.id) {
-          send(ws, { type: "ERROR", message: "Pas dans une room" });
-          return;
-        }
+ if (data.type === "ANSWER") {
+  const info = clients.get(ws);
 
-        const room = rooms.get(info.room);
-        if (!room) {
-          send(ws, { type: "ERROR", message: "Room introuvable" });
-          return;
-        }
+  if (!info) {
+    log("ERROR: client info introuvable");
+    return;
+  }
 
-        if (!Number.isInteger(data.answer) || data.answer < 0 || data.answer > 3) {
-          send(ws, { type: "ERROR", message: "Réponse invalide" });
-          return;
-        }
+  if (!info.room) {
+    log("ERROR: client sans room", info);
+    return;
+  }
 
-        const time = Number(data.time);
-        if (!Number.isFinite(time) || time < 0) {
-          send(ws, { type: "ERROR", message: "Temps invalide" });
-          return;
-        }
+  if (!info.id) {
+    log("ERROR: client sans playerId", info);
+    return;
+  }
 
-        if (room.answers[info.id] !== null) {
-          send(ws, { type: "ERROR", message: "Réponse déjà envoyée" });
-          return;
-        }
+  const room = rooms.get(info.room);
 
-        room.answers[info.id] = {
-          answer: data.answer,
-          time
-        };
+  if (!room) {
+    log("ERROR: room introuvable", info.room);
+    return;
+  }
 
-        log("ANSWER saved room", room.code, "player", info.id, room.answers[info.id]);
+  if (!room.answers) {
+    log("ERROR: room.answers undefined", room);
+    return;
+  }
 
-        broadcast(room, {
-          type: "ANSWER_RECEIVED",
-          roomCode: room.code,
-          playerId: info.id
-        });
+  log("ANSWER reçu → room:", room.code, "player:", info.id);
 
-        if (room.answers.A && room.answers.B) {
-          computeRoundResult(room);
-        }
+  room.answers[info.id] = {
+    answer: data.answer,
+    time: data.time
+  };
 
-        return;
-      }
+  broadcast(room, {
+    type: "ANSWER_RECEIVED",
+    roomCode: room.code,
+    playerId: info.id
+  });
+
+  if (room.answers.A && room.answers.B) {
+    computeRoundResult(room);
+  }
+
+  return;
+}
 
       send(ws, { type: "ERROR", message: "Unknown message type" });
     } catch (err) {
