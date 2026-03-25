@@ -15,6 +15,7 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.PORT || 3000;
+const ANSWER_TIME_LIMIT_MS = 5000;
 
 const rooms = new Map();   // roomCode -> room
 const clients = new Map(); // ws -> { room, id }
@@ -131,11 +132,43 @@ function getRoundVideos(roundWinner) {
   return { currentVideo, preloadVideo };
 }
 
+function clearQuestionTimeout(room) {
+  if (room.questionTimeout) {
+    clearTimeout(room.questionTimeout);
+    room.questionTimeout = null;
+  }
+}
+
+function resolveRoundTimeout(room) {
+  if (!room || room.roundResolved) {
+    return;
+  }
+
+  log("QUESTION_TIMEOUT room", room.code);
+
+  if (room.answers.A === null) {
+    room.answers.A = {
+      answer: -1,
+      time: ANSWER_TIME_LIMIT_MS
+    };
+  }
+
+  if (room.answers.B === null) {
+    room.answers.B = {
+      answer: -1,
+      time: ANSWER_TIME_LIMIT_MS
+    };
+  }
+
+  computeRoundResult(room);
+}
+
 function startNextQuestion(room) {
   room.index += 1;
 
   if (room.index >= room.questions.length) {
     log("QUIZ_FINISHED room", room.code);
+    clearQuestionTimeout(room);
     broadcast(room, { type: "QUIZ_FINISHED" });
     return;
   }
@@ -147,17 +180,36 @@ function startNextQuestion(room) {
 
   room.correct = q.correctAnswer;
   room.answers = { A: null, B: null };
+  room.roundResolved = false;
+
+  clearQuestionTimeout(room);
+
+  room.questionTimeout = setTimeout(() => {
+    try {
+      resolveRoundTimeout(room);
+    } catch (err) {
+      log("resolveRoundTimeout crash:", err);
+    }
+  }, ANSWER_TIME_LIMIT_MS);
 
   log("QUESTION_STARTED room", room.code, "index", room.index, "question", q.questionText);
 
   broadcast(room, {
     type: "QUESTION_STARTED",
     questionText: q.questionText,
-    answers: q.answers
+    answers: q.answers,
+    timeLimitMs: ANSWER_TIME_LIMIT_MS
   });
 }
 
 function computeRoundResult(room) {
+  if (room.roundResolved) {
+    return;
+  }
+
+  room.roundResolved = true;
+  clearQuestionTimeout(room);
+
   log("computeRoundResult room", room.code, "answers =", room.answers);
 
   const A = room.answers.A;
@@ -229,7 +281,9 @@ function createRoom(ws) {
     questions: cloneQuestions(),
     index: -1,
     answers: { A: null, B: null },
-    correct: 0
+    correct: 0,
+    questionTimeout: null,
+    roundResolved: false
   };
 
   rooms.set(code, room);
@@ -242,6 +296,35 @@ function createRoom(ws) {
     type: "ROOM_CREATED",
     roomCode: code
   });
+}
+
+function cleanupClient(ws) {
+  const info = clients.get(ws);
+
+  if (info && info.room) {
+    const room = rooms.get(info.room);
+
+    if (room) {
+      if (info.id === "A" && room.players.A && room.players.A.ws === ws) {
+        room.players.A = null;
+      }
+
+      if (info.id === "B" && room.players.B && room.players.B.ws === ws) {
+        room.players.B = null;
+      }
+
+      const noA = !room.players.A;
+      const noB = !room.players.B;
+
+      if (noA && noB) {
+        clearQuestionTimeout(room);
+        rooms.delete(room.code);
+        log("ROOM_REMOVED", room.code);
+      }
+    }
+  }
+
+  clients.delete(ws);
 }
 
 wss.on("connection", (ws) => {
@@ -328,13 +411,18 @@ wss.on("connection", (ws) => {
           return;
         }
 
+        if (room.roundResolved) {
+          send(ws, { type: "ERROR", message: "Round déjà terminé" });
+          return;
+        }
+
         if (!Number.isInteger(data.answer) || data.answer < 0 || data.answer > 3) {
           send(ws, { type: "ERROR", message: "Réponse invalide" });
           return;
         }
 
         const time = Number(data.time);
-        if (!Number.isFinite(time) || time < 0) {
+        if (!Number.isFinite(time) || time < 0 || time > 5) {
           send(ws, { type: "ERROR", message: "Temps invalide" });
           return;
         }
@@ -375,7 +463,7 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     log("client disconnected");
-    clients.delete(ws);
+    cleanupClient(ws);
   });
 
   ws.on("error", (err) => {
