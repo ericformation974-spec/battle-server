@@ -1,7 +1,6 @@
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
-const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 
@@ -17,25 +16,25 @@ const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.PORT || 3000;
 
-const rooms = new Map();
-const clients = new Map();
+const rooms = new Map();   // roomCode -> room
+const clients = new Map(); // ws -> { room, id }
 
 const VIDEO_CONFIG = {
   playerAWin: [
-    "win_A_1.mp4","win_A_2.mp4","win_A_3.mp4","win_A_4.mp4","win_A_5.mp4",
-    "win_A_6.mp4","win_A_7.mp4","win_A_8.mp4","win_A_9.mp4","win_A_10.mp4"
+    "win_A_1.mp4", "win_A_2.mp4", "win_A_3.mp4", "win_A_4.mp4", "win_A_5.mp4",
+    "win_A_6.mp4", "win_A_7.mp4", "win_A_8.mp4", "win_A_9.mp4", "win_A_10.mp4"
   ],
   playerBWin: [
-    "win_B_1.mp4","win_B_2.mp4","win_B_3.mp4","win_B_4.mp4","win_B_5.mp4",
-    "win_B_6.mp4","win_B_7.mp4","win_B_8.mp4","win_B_9.mp4","win_B_10.mp4"
+    "win_B_1.mp4", "win_B_2.mp4", "win_B_3.mp4", "win_B_4.mp4", "win_B_5.mp4",
+    "win_B_6.mp4", "win_B_7.mp4", "win_B_8.mp4", "win_B_9.mp4", "win_B_10.mp4"
   ],
   draw: [
-    "draw_1.mp4","draw_2.mp4","draw_3.mp4","draw_4.mp4","draw_5.mp4",
-    "draw_6.mp4","draw_7.mp4","draw_8.mp4","draw_9.mp4","draw_10.mp4"
+    "draw_1.mp4", "draw_2.mp4", "draw_3.mp4", "draw_4.mp4", "draw_5.mp4",
+    "draw_6.mp4", "draw_7.mp4", "draw_8.mp4", "draw_9.mp4", "draw_10.mp4"
   ],
   idle: [
-    "idle_1.mp4","idle_2.mp4","idle_3.mp4","idle_4.mp4","idle_5.mp4",
-    "idle_6.mp4","idle_7.mp4","idle_8.mp4","idle_9.mp4","idle_10.mp4"
+    "idle_1.mp4", "idle_2.mp4", "idle_3.mp4", "idle_4.mp4", "idle_5.mp4",
+    "idle_6.mp4", "idle_7.mp4", "idle_8.mp4", "idle_9.mp4", "idle_10.mp4"
   ]
 };
 
@@ -45,7 +44,7 @@ function log(...args) {
 
 function getRandom(arr) {
   if (!Array.isArray(arr) || arr.length === 0) {
-    throw new Error("getRandom reçu un tableau vide ou invalide");
+    throw new Error("getRandom a reçu un tableau vide ou invalide");
   }
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -95,7 +94,6 @@ function broadcast(room, data) {
   ["A", "B"].forEach((id) => {
     const player = room.players[id];
     if (!player) return;
-    if (player.isBot) return;
     send(player.ws, data);
   });
 }
@@ -121,14 +119,6 @@ function sanitizeRoomCode(value) {
   return String(value || "").trim().toUpperCase();
 }
 
-function randomFloat(min, max) {
-  return Math.random() * (max - min) + min;
-}
-
-function randomInt(min, maxInclusive) {
-  return Math.floor(Math.random() * (maxInclusive - min + 1)) + min;
-}
-
 function getRoundVideos(roundWinner) {
   let currentVideo;
 
@@ -141,59 +131,12 @@ function getRoundVideos(roundWinner) {
   return { currentVideo, preloadVideo };
 }
 
-function maybeScheduleBotAnswer(room) {
-  if (!room.isSolo) return;
-  if (!room.players.B || !room.players.B.isBot) return;
-  if (room.answers.B !== null) return;
-
-  const delaySec = randomFloat(1, 3);
-  const answerIndex = randomInt(0, 3);
-
-  if (room.botTimeout) {
-    clearTimeout(room.botTimeout);
-    room.botTimeout = null;
-  }
-
-  room.botTimeout = setTimeout(() => {
-    try {
-      const currentRoom = rooms.get(room.code);
-      if (!currentRoom) return;
-      if (currentRoom.answers.B !== null) return;
-
-      currentRoom.answers.B = {
-        answer: answerIndex,
-        time: Number(delaySec.toFixed(3))
-      };
-
-      broadcast(currentRoom, {
-        type: "ANSWER_RECEIVED",
-        roomCode: currentRoom.code,
-        playerId: "B"
-      });
-
-      if (currentRoom.answers.A && currentRoom.answers.B) {
-        computeRoundResult(currentRoom);
-      }
-    } catch (err) {
-      log("bot answer crash:", err);
-    }
-  }, delaySec * 1000);
-}
-
 function startNextQuestion(room) {
   room.index += 1;
 
   if (room.index >= room.questions.length) {
-    if (room.botTimeout) {
-      clearTimeout(room.botTimeout);
-      room.botTimeout = null;
-    }
-
     log("QUIZ_FINISHED room", room.code);
-
-    broadcast(room, {
-      type: "QUIZ_FINISHED"
-    });
+    broadcast(room, { type: "QUIZ_FINISHED" });
     return;
   }
 
@@ -212,8 +155,6 @@ function startNextQuestion(room) {
     questionText: q.questionText,
     answers: q.answers
   });
-
-  maybeScheduleBotAnswer(room);
 }
 
 function computeRoundResult(room) {
@@ -276,51 +217,31 @@ function computeRoundResult(room) {
   }, 2000);
 }
 
-function createRoom(ws, isSolo) {
+function createRoom(ws) {
   const code = createUniqueRoomCode();
 
   const room = {
     code,
-    isSolo,
     players: {
-      A: { ws, isBot: false },
-      B: isSolo ? { isBot: true } : null
+      A: { ws },
+      B: null
     },
     questions: cloneQuestions(),
     index: -1,
     answers: { A: null, B: null },
-    correct: 0,
-    botTimeout: null
+    correct: 0
   };
 
   rooms.set(code, room);
   clients.set(ws, { room: code, id: "A" });
 
-  log("ROOM_CREATED", code, "solo =", isSolo);
+  log("ROOM_CREATED", code);
+  log("CLIENT A enregistré:", clients.get(ws));
 
   send(ws, {
     type: "ROOM_CREATED",
     roomCode: code
   });
-
-  if (isSolo) {
-    send(ws, {
-      type: "ROOM_JOINED",
-      roomCode: code
-    });
-
-    broadcast(room, {
-      type: "BATTLE_READY"
-    });
-
-    setTimeout(() => {
-      try {
-        startNextQuestion(room);
-      } catch (err) {
-        log("startNextQuestion solo crash:", err);
-      }
-    }, 1000);
-  }
 }
 
 wss.on("connection", (ws) => {
@@ -334,13 +255,8 @@ wss.on("connection", (ws) => {
       const data = JSON.parse(msg.toString());
       log("message received:", data);
 
-      if (data.type === "CREATE_SOLO_BATTLE") {
-        createRoom(ws, true);
-        return;
-      }
-
       if (data.type === "CREATE_BATTLE") {
-        createRoom(ws, false);
+        createRoom(ws);
         return;
       }
 
@@ -358,19 +274,18 @@ wss.on("connection", (ws) => {
           return;
         }
 
-        room.players.B = { ws, isBot: false };
+        room.players.B = { ws };
         clients.set(ws, { room: code, id: "B" });
 
         log("ROOM_JOINED", code, "player B");
+        log("CLIENT B enregistré:", clients.get(ws));
 
         send(ws, {
           type: "ROOM_JOINED",
           roomCode: code
         });
 
-        broadcast(room, {
-          type: "BATTLE_READY"
-        });
+        broadcast(room, { type: "BATTLE_READY" });
 
         setTimeout(() => {
           try {
@@ -383,55 +298,73 @@ wss.on("connection", (ws) => {
         return;
       }
 
- if (data.type === "ANSWER") {
-  const info = clients.get(ws);
+      if (data.type === "ANSWER") {
+        const info = clients.get(ws);
 
-  if (!info) {
-    log("ERROR: client info introuvable");
-    return;
-  }
+        if (!info) {
+          log("ERROR: client info introuvable");
+          return;
+        }
 
-  if (!info.room) {
-    log("ERROR: client sans room", info);
-    return;
-  }
+        if (!info.room) {
+          log("ERROR: client sans room", info);
+          return;
+        }
 
-  if (!info.id) {
-    log("ERROR: client sans playerId", info);
-    return;
-  }
+        if (!info.id) {
+          log("ERROR: client sans playerId", info);
+          return;
+        }
 
-  const room = rooms.get(info.room);
+        const room = rooms.get(info.room);
 
-  if (!room) {
-    log("ERROR: room introuvable", info.room);
-    return;
-  }
+        if (!room) {
+          log("ERROR: room introuvable", info.room);
+          return;
+        }
 
-  if (!room.answers) {
-    log("ERROR: room.answers undefined", room);
-    return;
-  }
+        if (!room.answers) {
+          log("ERROR: room.answers undefined", room);
+          return;
+        }
 
-  log("ANSWER reçu → room:", room.code, "player:", info.id);
+        if (!Number.isInteger(data.answer) || data.answer < 0 || data.answer > 3) {
+          send(ws, { type: "ERROR", message: "Réponse invalide" });
+          return;
+        }
 
-  room.answers[info.id] = {
-    answer: data.answer,
-    time: data.time
-  };
+        const time = Number(data.time);
+        if (!Number.isFinite(time) || time < 0) {
+          send(ws, { type: "ERROR", message: "Temps invalide" });
+          return;
+        }
 
-  broadcast(room, {
-    type: "ANSWER_RECEIVED",
-    roomCode: room.code,
-    playerId: info.id
-  });
+        if (room.answers[info.id] !== null) {
+          send(ws, { type: "ERROR", message: "Réponse déjà envoyée" });
+          return;
+        }
 
-  if (room.answers.A && room.answers.B) {
-    computeRoundResult(room);
-  }
+        log("ANSWER reçu → room:", room.code, "player:", info.id);
 
-  return;
-}
+        room.answers[info.id] = {
+          answer: data.answer,
+          time: data.time
+        };
+
+        log("ANSWER saved room", room.code, "player", info.id, room.answers[info.id]);
+
+        broadcast(room, {
+          type: "ANSWER_RECEIVED",
+          roomCode: room.code,
+          playerId: info.id
+        });
+
+        if (room.answers.A && room.answers.B) {
+          computeRoundResult(room);
+        }
+
+        return;
+      }
 
       send(ws, { type: "ERROR", message: "Unknown message type" });
     } catch (err) {
