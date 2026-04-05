@@ -26,10 +26,10 @@ const clients = new Map(); // ws -> { room, id }
 const VIDEO_PATHS = {
   F_YES: "\video\F_yes",
   F_NO: "\video\F_no",
-  B_YES: "Asset\video\B_yes",
-  B_NO: "Asset\video\B_no",
-  F_IDLE: "Asset\video\F_idle",
-  B_IDLE: "Asset\video\B_idle"
+  B_YES: "\video\B_yes",
+  B_NO: "\video\B_no",
+  F_IDLE: "\video\F_idle",
+  B_IDLE: "\video\B_idle"
 };
 
 function log(...args) {
