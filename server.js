@@ -24,12 +24,12 @@ const rooms = new Map();   // roomCode -> room
 const clients = new Map(); // ws -> { room, id }
 
 const VIDEO_PATHS = {
-  F_YES: "video/F_yes",
-  F_NO: "video/F_no",
-  B_YES: "video/B_yes",
-  B_NO: "video/B_no",
-  F_IDLE: "video/F_idle",
-  B_IDLE: "video/B_idle"
+  F_YES: "VIDEO/F_yes",
+  F_NO: "VIDEO/F_no",
+  B_YES: "VIDEO/B_yes",
+  B_NO: "VIDEO/B_no",
+  F_IDLE: "VIDEO/F_idle",
+  B_IDLE: "VIDEO/B_idle"
 };
 
 function log(...args) {
