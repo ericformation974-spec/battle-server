@@ -17,11 +17,11 @@ const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 const ANSWER_TIME_LIMIT_MS = 5000;
 
-const TOTAL_SHOTS_PER_TEAM = 5;
-const TOTAL_ROUNDS = TOTAL_SHOTS_PER_TEAM * 2; // 10 manches au total
+const REGULAR_SHOTS_PER_TEAM = 5;
+const REGULAR_TOTAL_ROUNDS = REGULAR_SHOTS_PER_TEAM * 2;
 
-const rooms = new Map();   // roomCode -> room
-const clients = new Map(); // ws -> { room, id }
+const rooms = new Map();
+const clients = new Map();
 
 const VIDEO_PATHS = {
   F_YES: "VIDEO/F_yes",
@@ -29,22 +29,19 @@ const VIDEO_PATHS = {
   B_YES: "VIDEO/B_yes",
   B_NO: "VIDEO/B_no",
   F_IDLE: "VIDEO/F_idle",
-  B_IDLE: "VIDEO/B_idle"
+  B_IDLE: "VIDEO/B_idle",
+
+  FINAL_F_WIN: "VIDEO/FINAL/F_win",
+  FINAL_B_WIN: "VIDEO/FINAL/B_win",
+  FINAL_DRAW: "VIDEO/FINAL/draw"
 };
 
 function log(...args) {
   console.log(new Date().toISOString(), ...args);
 }
 
-function getRandom(arr) {
-  if (!Array.isArray(arr) || arr.length === 0) {
-    throw new Error("getRandom a reçu un tableau vide ou invalide");
-  }
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function getRandomVideoPath(folder, maxIndex) {
-  const n = Math.floor(Math.random() * maxIndex) + 1;
+function getRandomVideoPath(folder, max) {
+  const n = Math.floor(Math.random() * max) + 1;
   return `${folder}/${n}.mp4`;
 }
 
@@ -125,64 +122,55 @@ function clearQuestionTimeout(room) {
   }
 }
 
-function getCurrentShooter(room) {
-  // index 0 => France (A), index 1 => Brésil (B), etc.
-  return room.index % 2 === 0 ? "A" : "B";
+function getShooterByRound(roundIndex) {
+  return roundIndex % 2 === 0 ? "A" : "B";
 }
 
 function getNextShooter(room) {
   const nextIndex = room.index + 1;
-  if (nextIndex >= TOTAL_ROUNDS) {
+  if (room.isSuddenDeath) {
+    return getShooterByRound(nextIndex);
+  }
+  if (nextIndex >= REGULAR_TOTAL_ROUNDS) {
     return null;
   }
-  return nextIndex % 2 === 0 ? "A" : "B";
+  return getShooterByRound(nextIndex);
 }
 
 function getIdleVideoForShooter(shooter) {
-  if (shooter === "A") {
-    return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 5);
-  }
-  if (shooter === "B") {
-    return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 5);
-  }
-  return null;
+  if (shooter === "A") return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 5);
+  if (shooter === "B") return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 5);
+  return "";
 }
 
 function getRoundVideos(room, roundWinner) {
   const shooter = room.currentShooter;
   const nextShooter = getNextShooter(room);
 
-  let currentVideo = null;
+  let currentVideo = "";
+  let preloadVideo = "";
 
-  // Si la France tire
   if (shooter === "A") {
-    if (roundWinner === "A") {
-      currentVideo = getRandomVideoPath(VIDEO_PATHS.F_YES, 10);
-    } else if (roundWinner === "B") {
-      currentVideo = getRandomVideoPath(VIDEO_PATHS.F_NO, 10);
-    }
+    currentVideo =
+      roundWinner === "A"
+        ? getRandomVideoPath(VIDEO_PATHS.F_YES, 10)
+        : getRandomVideoPath(VIDEO_PATHS.F_NO, 10);
+  } else if (shooter === "B") {
+    currentVideo =
+      roundWinner === "B"
+        ? getRandomVideoPath(VIDEO_PATHS.B_YES, 10)
+        : getRandomVideoPath(VIDEO_PATHS.B_NO, 10);
   }
 
-  // Si le Brésil tire
-  if (shooter === "B") {
-    if (roundWinner === "B") {
-      currentVideo = getRandomVideoPath(VIDEO_PATHS.B_YES, 10);
-    } else if (roundWinner === "A") {
-      currentVideo = getRandomVideoPath(VIDEO_PATHS.B_NO, 10);
-    }
+  if (nextShooter) {
+    preloadVideo = getIdleVideoForShooter(nextShooter);
   }
-
-  const preloadVideo = nextShooter ? getIdleVideoForShooter(nextShooter) : null;
 
   return { currentVideo, preloadVideo };
 }
 
 function getRoundDisplayText(room, roundWinner) {
   const shooter = room.currentShooter;
-
-  if (roundWinner === "draw") {
-    return shooter === "A" ? "FRANCE RATE" : "BRESIL RATE";
-  }
 
   if (shooter === "A") {
     return roundWinner === "A" ? "BUT FRANCE" : "FRANCE RATE";
@@ -191,9 +179,21 @@ function getRoundDisplayText(room, roundWinner) {
   return roundWinner === "B" ? "BUT BRESIL" : "BRESIL RATE";
 }
 
-function hasEarlyWinner(room) {
-  const remainingA = TOTAL_SHOTS_PER_TEAM - room.shots.A;
-  const remainingB = TOTAL_SHOTS_PER_TEAM - room.shots.B;
+function getFinalVideo(finalWinner) {
+  if (finalWinner === "A") {
+    return getRandomVideoPath(VIDEO_PATHS.FINAL_F_WIN, 5);
+  }
+  if (finalWinner === "B") {
+    return getRandomVideoPath(VIDEO_PATHS.FINAL_B_WIN, 5);
+  }
+  return getRandomVideoPath(VIDEO_PATHS.FINAL_DRAW, 3);
+}
+
+function canEndEarlyDuringRegular(room) {
+  if (room.isSuddenDeath) return false;
+
+  const remainingA = REGULAR_SHOTS_PER_TEAM - room.shots.A;
+  const remainingB = REGULAR_SHOTS_PER_TEAM - room.shots.B;
 
   if (room.score.A > room.score.B + remainingB) return true;
   if (room.score.B > room.score.A + remainingA) return true;
@@ -201,28 +201,57 @@ function hasEarlyWinner(room) {
   return false;
 }
 
+function shouldEnterSuddenDeath(room) {
+  if (room.isSuddenDeath) return false;
+  if (room.index < REGULAR_TOTAL_ROUNDS - 1) return false;
+  return room.score.A === room.score.B;
+}
+
+function getSuddenDeathWinner(room) {
+  if (!room.isSuddenDeath) return null;
+  if (room.suddenDeathPairShots.A === 1 && room.suddenDeathPairShots.B === 1) {
+    if (room.suddenDeathPairGoals.A > room.suddenDeathPairGoals.B) return "A";
+    if (room.suddenDeathPairGoals.B > room.suddenDeathPairGoals.A) return "B";
+  }
+  return null;
+}
+
+function resetSuddenDeathPair(room) {
+  room.suddenDeathPairShots = { A: 0, B: 0 };
+  room.suddenDeathPairGoals = { A: 0, B: 0 };
+}
+
 function finishSession(room) {
   clearQuestionTimeout(room);
 
-  let winner = "draw";
-  let text = "SEANCE TERMINEE - EGALITE";
+  let finalWinner = "draw";
+  let finalText = "SEANCE TERMINEE - EGALITE";
 
   if (room.score.A > room.score.B) {
-    winner = "A";
-    text = "FRANCE GAGNE LA SEANCE";
+    finalWinner = "A";
+    finalText = "FRANCE GAGNE LA SEANCE";
   } else if (room.score.B > room.score.A) {
-    winner = "B";
-    text = "BRESIL GAGNE LA SEANCE";
+    finalWinner = "B";
+    finalText = "BRESIL GAGNE LA SEANCE";
   }
 
-  log("QUIZ_FINISHED room", room.code, "winner", winner, "score", room.score);
+  const finalVideo = getFinalVideo(finalWinner);
+
+  log("QUIZ_FINISHED room", room.code, {
+    finalWinner,
+    finalText,
+    score: room.score,
+    shots: room.shots,
+    finalVideo
+  });
 
   broadcast(room, {
     type: "QUIZ_FINISHED",
-    winner,
-    displayText: text,
+    winner: finalWinner,
+    displayText: finalText,
     score: room.score,
-    shots: room.shots
+    shots: room.shots,
+    finalVideo
   });
 }
 
@@ -253,24 +282,25 @@ function resolveRoundTimeout(room) {
 function startNextQuestion(room) {
   room.index += 1;
 
-  if (room.index >= TOTAL_ROUNDS) {
-    finishSession(room);
-    return;
+  if (!room.isSuddenDeath && room.index >= REGULAR_TOTAL_ROUNDS) {
+    if (room.score.A === room.score.B) {
+      room.isSuddenDeath = true;
+      resetSuddenDeathPair(room);
+      log("SUDDEN_DEATH_STARTED room", room.code);
+    } else {
+      finishSession(room);
+      return;
+    }
   }
 
-  if (room.index >= room.questions.length) {
-    log("Pas assez de questions pour terminer la séance", room.code);
-    finishSession(room);
-    return;
-  }
+  const questionIndex = room.index % room.questions.length;
+  const q = room.questions[questionIndex];
 
-  room.currentShooter = getCurrentShooter(room);
-
-  const q = room.questions[room.index];
   if (!q) {
-    throw new Error(`Question introuvable à l'index ${room.index}`);
+    throw new Error(`Question introuvable à l'index ${questionIndex}`);
   }
 
+  room.currentShooter = getShooterByRound(room.index);
   room.correct = q.correctAnswer;
   room.answers = { A: null, B: null };
   room.roundResolved = false;
@@ -285,27 +315,16 @@ function startNextQuestion(room) {
     }
   }, ANSWER_TIME_LIMIT_MS);
 
-  log(
-    "QUESTION_STARTED room",
-    room.code,
-    "index",
-    room.index,
-    "shooter",
-    room.currentShooter,
-    "question",
-    q.questionText
-  );
-
   broadcast(room, {
     type: "QUESTION_STARTED",
     questionText: q.questionText,
     answers: q.answers,
     timeLimitMs: ANSWER_TIME_LIMIT_MS,
     round: room.index + 1,
-    totalRounds: TOTAL_ROUNDS,
     shooter: room.currentShooter,
     score: room.score,
     shots: room.shots,
+    isSuddenDeath: room.isSuddenDeath,
     preloadVideo: getIdleVideoForShooter(room.currentShooter)
   });
 }
@@ -318,8 +337,6 @@ function computeRoundResult(room) {
   room.roundResolved = true;
   clearQuestionTimeout(room);
 
-  log("computeRoundResult room", room.code, "answers =", room.answers);
-
   const A = room.answers.A;
   const B = room.answers.B;
 
@@ -328,7 +345,6 @@ function computeRoundResult(room) {
   }
 
   const correct = room.correct;
-
   const Aok = A.answer === correct;
   const Bok = B.answer === correct;
 
@@ -339,44 +355,42 @@ function computeRoundResult(room) {
   } else if (Bok && !Aok) {
     winner = "B";
   } else if (Aok && Bok) {
-    if (A.time < B.time) {
-      winner = "A";
-    } else if (B.time < A.time) {
-      winner = "B";
-    } else {
-      winner = "draw";
-    }
-  } else {
-    winner = "draw";
+    if (A.time < B.time) winner = "A";
+    else if (B.time < A.time) winner = "B";
   }
 
   const shooter = room.currentShooter;
 
-  // On compte le tir pour le tireur courant
   room.shots[shooter] += 1;
 
-  // Le but est marqué uniquement si le tireur gagne la question
+  let goalScored = false;
   if (winner === shooter) {
     room.score[shooter] += 1;
+    goalScored = true;
+  }
+
+  if (room.isSuddenDeath) {
+    room.suddenDeathPairShots[shooter] += 1;
+    if (goalScored) {
+      room.suddenDeathPairGoals[shooter] += 1;
+    }
   }
 
   const text = getRoundDisplayText(room, winner);
   const { currentVideo, preloadVideo } = getRoundVideos(room, winner);
 
-  log(
-    "ROUND_RESULT room",
-    room.code,
-    "winner",
-    winner,
-    "shooter",
+  log("ROUND_RESULT payload", {
+    room: room.code,
     shooter,
-    "video",
+    winner,
     currentVideo,
-    "preload",
     preloadVideo,
-    "score",
-    room.score
-  );
+    score: room.score,
+    shots: room.shots,
+    isSuddenDeath: room.isSuddenDeath,
+    suddenDeathPairShots: room.suddenDeathPairShots,
+    suddenDeathPairGoals: room.suddenDeathPairGoals
+  });
 
   broadcast(room, {
     type: "ROUND_RESULT",
@@ -386,16 +400,28 @@ function computeRoundResult(room) {
     currentVideo,
     preloadVideo,
     score: room.score,
-    shots: room.shots
+    shots: room.shots,
+    isSuddenDeath: room.isSuddenDeath
   });
 
   setTimeout(() => {
     try {
-      if (room.index + 1 >= TOTAL_ROUNDS || hasEarlyWinner(room)) {
+      if (canEndEarlyDuringRegular(room)) {
         finishSession(room);
-      } else {
-        startNextQuestion(room);
+        return;
       }
+
+      const suddenDeathWinner = getSuddenDeathWinner(room);
+      if (suddenDeathWinner) {
+        finishSession(room);
+        return;
+      }
+
+      if (room.isSuddenDeath && room.suddenDeathPairShots.A === 1 && room.suddenDeathPairShots.B === 1) {
+        resetSuddenDeathPair(room);
+      }
+
+      startNextQuestion(room);
     } catch (err) {
       log("startNextQuestion after result crash:", err);
     }
@@ -419,14 +445,16 @@ function createRoom(ws) {
     questionTimeout: null,
     roundResolved: false,
     score: { A: 0, B: 0 },
-    shots: { A: 0, B: 0 }
+    shots: { A: 0, B: 0 },
+    isSuddenDeath: false,
+    suddenDeathPairShots: { A: 0, B: 0 },
+    suddenDeathPairGoals: { A: 0, B: 0 }
   };
 
   rooms.set(code, room);
   clients.set(ws, { room: code, id: "A" });
 
   log("ROOM_CREATED", code);
-  log("CLIENT A enregistré:", clients.get(ws));
 
   send(ws, {
     type: "ROOM_CREATED",
@@ -449,10 +477,7 @@ function cleanupClient(ws) {
         room.players.B = null;
       }
 
-      const noA = !room.players.A;
-      const noB = !room.players.B;
-
-      if (noA && noB) {
+      if (!room.players.A && !room.players.B) {
         clearQuestionTimeout(room);
         rooms.delete(room.code);
         log("ROOM_REMOVED", room.code);
@@ -496,9 +521,6 @@ wss.on("connection", (ws) => {
         room.players.B = { ws };
         clients.set(ws, { room: code, id: "B" });
 
-        log("ROOM_JOINED", code, "player B");
-        log("CLIENT B enregistré:", clients.get(ws));
-
         send(ws, {
           type: "ROOM_JOINED",
           roomCode: code
@@ -520,30 +542,15 @@ wss.on("connection", (ws) => {
       if (data.type === "ANSWER") {
         const info = clients.get(ws);
 
-        if (!info) {
-          log("ERROR: client info introuvable");
-          return;
-        }
-
-        if (!info.room) {
-          log("ERROR: client sans room", info);
-          return;
-        }
-
-        if (!info.id) {
-          log("ERROR: client sans playerId", info);
+        if (!info || !info.room || !info.id) {
+          send(ws, { type: "ERROR", message: "Client non associé à une room" });
           return;
         }
 
         const room = rooms.get(info.room);
 
         if (!room) {
-          log("ERROR: room introuvable", info.room);
-          return;
-        }
-
-        if (!room.answers) {
-          log("ERROR: room.answers undefined", room);
+          send(ws, { type: "ERROR", message: "Room introuvable" });
           return;
         }
 
@@ -568,14 +575,10 @@ wss.on("connection", (ws) => {
           return;
         }
 
-        log("ANSWER reçu → room:", room.code, "player:", info.id);
-
         room.answers[info.id] = {
           answer: data.answer,
           time
         };
-
-        log("ANSWER saved room", room.code, "player", info.id, room.answers[info.id]);
 
         broadcast(room, {
           type: "ANSWER_RECEIVED",
