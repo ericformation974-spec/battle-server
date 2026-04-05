@@ -17,26 +17,19 @@ const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 const ANSWER_TIME_LIMIT_MS = 5000;
 
+const TOTAL_SHOTS_PER_TEAM = 5;
+const TOTAL_ROUNDS = TOTAL_SHOTS_PER_TEAM * 2; // 10 manches au total
+
 const rooms = new Map();   // roomCode -> room
 const clients = new Map(); // ws -> { room, id }
 
-const VIDEO_CONFIG = {
-  playerAWin: [
-    "win_A_1.mp4", "win_A_2.mp4", "win_A_3.mp4", "win_A_4.mp4", "win_A_5.mp4",
-    "win_A_6.mp4", "win_A_7.mp4", "win_A_8.mp4", "win_A_9.mp4", "win_A_10.mp4"
-  ],
-  playerBWin: [
-    "win_B_1.mp4", "win_B_2.mp4", "win_B_3.mp4", "win_B_4.mp4", "win_B_5.mp4",
-    "win_B_6.mp4", "win_B_7.mp4", "win_B_8.mp4", "win_B_9.mp4", "win_B_10.mp4"
-  ],
-  draw: [
-    "draw_1.mp4", "draw_2.mp4", "draw_3.mp4", "draw_4.mp4", "draw_5.mp4",
-    "draw_6.mp4", "draw_7.mp4", "draw_8.mp4", "draw_9.mp4", "draw_10.mp4"
-  ],
-  idle: [
-    "idle_1.mp4", "idle_2.mp4", "idle_3.mp4", "idle_4.mp4", "idle_5.mp4",
-    "idle_6.mp4", "idle_7.mp4", "idle_8.mp4", "idle_9.mp4", "idle_10.mp4"
-  ]
+const VIDEO_PATHS = {
+  F_YES: "Asset/video/F_yes",
+  F_NO: "Asset/video/F_no",
+  B_YES: "Asset/video/B_yes",
+  B_NO: "Asset/video/B_no",
+  F_IDLE: "Asset/video/Fidle",
+  B_IDLE: "Asset/video/Bidle"
 };
 
 function log(...args) {
@@ -48,6 +41,11 @@ function getRandom(arr) {
     throw new Error("getRandom a reçu un tableau vide ou invalide");
   }
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function getRandomVideoPath(folder, maxIndex) {
+  const n = Math.floor(Math.random() * maxIndex) + 1;
+  return `${folder}/${n}.mp4`;
 }
 
 function loadQuestions() {
@@ -120,23 +118,112 @@ function sanitizeRoomCode(value) {
   return String(value || "").trim().toUpperCase();
 }
 
-function getRoundVideos(roundWinner) {
-  let currentVideo;
-
-  if (roundWinner === "A") currentVideo = getRandom(VIDEO_CONFIG.playerAWin);
-  else if (roundWinner === "B") currentVideo = getRandom(VIDEO_CONFIG.playerBWin);
-  else currentVideo = getRandom(VIDEO_CONFIG.draw);
-
-  const preloadVideo = getRandom(VIDEO_CONFIG.idle);
-
-  return { currentVideo, preloadVideo };
-}
-
 function clearQuestionTimeout(room) {
   if (room.questionTimeout) {
     clearTimeout(room.questionTimeout);
     room.questionTimeout = null;
   }
+}
+
+function getCurrentShooter(room) {
+  // index 0 => France (A), index 1 => Brésil (B), etc.
+  return room.index % 2 === 0 ? "A" : "B";
+}
+
+function getNextShooter(room) {
+  const nextIndex = room.index + 1;
+  if (nextIndex >= TOTAL_ROUNDS) {
+    return null;
+  }
+  return nextIndex % 2 === 0 ? "A" : "B";
+}
+
+function getIdleVideoForShooter(shooter) {
+  if (shooter === "A") {
+    return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 5);
+  }
+  if (shooter === "B") {
+    return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 5);
+  }
+  return null;
+}
+
+function getRoundVideos(room, roundWinner) {
+  const shooter = room.currentShooter;
+  const nextShooter = getNextShooter(room);
+
+  let currentVideo = null;
+
+  // Si la France tire
+  if (shooter === "A") {
+    if (roundWinner === "A") {
+      currentVideo = getRandomVideoPath(VIDEO_PATHS.F_YES, 10);
+    } else if (roundWinner === "B") {
+      currentVideo = getRandomVideoPath(VIDEO_PATHS.F_NO, 10);
+    }
+  }
+
+  // Si le Brésil tire
+  if (shooter === "B") {
+    if (roundWinner === "B") {
+      currentVideo = getRandomVideoPath(VIDEO_PATHS.B_YES, 10);
+    } else if (roundWinner === "A") {
+      currentVideo = getRandomVideoPath(VIDEO_PATHS.B_NO, 10);
+    }
+  }
+
+  const preloadVideo = nextShooter ? getIdleVideoForShooter(nextShooter) : null;
+
+  return { currentVideo, preloadVideo };
+}
+
+function getRoundDisplayText(room, roundWinner) {
+  const shooter = room.currentShooter;
+
+  if (roundWinner === "draw") {
+    return shooter === "A" ? "FRANCE RATE" : "BRESIL RATE";
+  }
+
+  if (shooter === "A") {
+    return roundWinner === "A" ? "BUT FRANCE" : "FRANCE RATE";
+  }
+
+  return roundWinner === "B" ? "BUT BRESIL" : "BRESIL RATE";
+}
+
+function hasEarlyWinner(room) {
+  const remainingA = TOTAL_SHOTS_PER_TEAM - room.shots.A;
+  const remainingB = TOTAL_SHOTS_PER_TEAM - room.shots.B;
+
+  if (room.score.A > room.score.B + remainingB) return true;
+  if (room.score.B > room.score.A + remainingA) return true;
+
+  return false;
+}
+
+function finishSession(room) {
+  clearQuestionTimeout(room);
+
+  let winner = "draw";
+  let text = "SEANCE TERMINEE - EGALITE";
+
+  if (room.score.A > room.score.B) {
+    winner = "A";
+    text = "FRANCE GAGNE LA SEANCE";
+  } else if (room.score.B > room.score.A) {
+    winner = "B";
+    text = "BRESIL GAGNE LA SEANCE";
+  }
+
+  log("QUIZ_FINISHED room", room.code, "winner", winner, "score", room.score);
+
+  broadcast(room, {
+    type: "QUIZ_FINISHED",
+    winner,
+    displayText: text,
+    score: room.score,
+    shots: room.shots
+  });
 }
 
 function resolveRoundTimeout(room) {
@@ -166,12 +253,18 @@ function resolveRoundTimeout(room) {
 function startNextQuestion(room) {
   room.index += 1;
 
-  if (room.index >= room.questions.length) {
-    log("QUIZ_FINISHED room", room.code);
-    clearQuestionTimeout(room);
-    broadcast(room, { type: "QUIZ_FINISHED" });
+  if (room.index >= TOTAL_ROUNDS) {
+    finishSession(room);
     return;
   }
+
+  if (room.index >= room.questions.length) {
+    log("Pas assez de questions pour terminer la séance", room.code);
+    finishSession(room);
+    return;
+  }
+
+  room.currentShooter = getCurrentShooter(room);
 
   const q = room.questions[room.index];
   if (!q) {
@@ -192,13 +285,28 @@ function startNextQuestion(room) {
     }
   }, ANSWER_TIME_LIMIT_MS);
 
-  log("QUESTION_STARTED room", room.code, "index", room.index, "question", q.questionText);
+  log(
+    "QUESTION_STARTED room",
+    room.code,
+    "index",
+    room.index,
+    "shooter",
+    room.currentShooter,
+    "question",
+    q.questionText
+  );
 
   broadcast(room, {
     type: "QUESTION_STARTED",
     questionText: q.questionText,
     answers: q.answers,
-    timeLimitMs: ANSWER_TIME_LIMIT_MS
+    timeLimitMs: ANSWER_TIME_LIMIT_MS,
+    round: room.index + 1,
+    totalRounds: TOTAL_ROUNDS,
+    shooter: room.currentShooter,
+    score: room.score,
+    shots: room.shots,
+    preloadVideo: getIdleVideoForShooter(room.currentShooter)
   });
 }
 
@@ -225,44 +333,69 @@ function computeRoundResult(room) {
   const Bok = B.answer === correct;
 
   let winner = "draw";
-  let text = "MATCH NUL";
 
   if (Aok && !Bok) {
     winner = "A";
-    text = "JOUEUR A GAGNE";
   } else if (Bok && !Aok) {
     winner = "B";
-    text = "JOUEUR B GAGNE";
   } else if (Aok && Bok) {
     if (A.time < B.time) {
       winner = "A";
-      text = "JOUEUR A GAGNE";
     } else if (B.time < A.time) {
       winner = "B";
-      text = "JOUEUR B GAGNE";
     } else {
       winner = "draw";
-      text = "MATCH NUL";
     }
   } else {
     winner = "draw";
-    text = "MATCH NUL";
   }
 
-  const { currentVideo, preloadVideo } = getRoundVideos(winner);
+  const shooter = room.currentShooter;
 
-  log("ROUND_RESULT room", room.code, "winner", winner, "video", currentVideo, "preload", preloadVideo);
+  // On compte le tir pour le tireur courant
+  room.shots[shooter] += 1;
+
+  // Le but est marqué uniquement si le tireur gagne la question
+  if (winner === shooter) {
+    room.score[shooter] += 1;
+  }
+
+  const text = getRoundDisplayText(room, winner);
+  const { currentVideo, preloadVideo } = getRoundVideos(room, winner);
+
+  log(
+    "ROUND_RESULT room",
+    room.code,
+    "winner",
+    winner,
+    "shooter",
+    shooter,
+    "video",
+    currentVideo,
+    "preload",
+    preloadVideo,
+    "score",
+    room.score
+  );
 
   broadcast(room, {
     type: "ROUND_RESULT",
     displayText: text,
+    roundWinner: winner,
+    shooter,
     currentVideo,
-    preloadVideo
+    preloadVideo,
+    score: room.score,
+    shots: room.shots
   });
 
   setTimeout(() => {
     try {
-      startNextQuestion(room);
+      if (room.index + 1 >= TOTAL_ROUNDS || hasEarlyWinner(room)) {
+        finishSession(room);
+      } else {
+        startNextQuestion(room);
+      }
     } catch (err) {
       log("startNextQuestion after result crash:", err);
     }
@@ -280,10 +413,13 @@ function createRoom(ws) {
     },
     questions: cloneQuestions(),
     index: -1,
+    currentShooter: "A",
     answers: { A: null, B: null },
     correct: 0,
     questionTimeout: null,
-    roundResolved: false
+    roundResolved: false,
+    score: { A: 0, B: 0 },
+    shots: { A: 0, B: 0 }
   };
 
   rooms.set(code, room);
@@ -422,7 +558,7 @@ wss.on("connection", (ws) => {
         }
 
         const time = Number(data.time);
-        if (!Number.isFinite(time) || time < 0 || time > 5) {
+        if (!Number.isFinite(time) || time < 0 || time > ANSWER_TIME_LIMIT_MS) {
           send(ws, { type: "ERROR", message: "Temps invalide" });
           return;
         }
@@ -436,7 +572,7 @@ wss.on("connection", (ws) => {
 
         room.answers[info.id] = {
           answer: data.answer,
-          time: data.time
+          time
         };
 
         log("ANSWER saved room", room.code, "player", info.id, room.answers[info.id]);
