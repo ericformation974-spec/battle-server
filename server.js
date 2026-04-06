@@ -229,8 +229,8 @@ function finishSession(room) {
     displayText: finalText,
     score: room.score,
     shots: room.shots,
-    finalVideo,
-    history: room.history
+    history: room.history,
+    finalVideo
   });
 }
 
@@ -277,12 +277,6 @@ function startQuestion(room) {
 
   const idleVideo = getIdleVideoForShooter(room.currentShooter);
 
-  log("IDLE_VIDEO_START", {
-    room: room.code,
-    shooter: room.currentShooter,
-    idleVideo
-  });
-
   broadcast(room, {
     type: "IDLE_VIDEO",
     currentVideo: idleVideo,
@@ -290,8 +284,8 @@ function startQuestion(room) {
     shooter: room.currentShooter,
     score: room.score,
     shots: room.shots,
-    isSuddenDeath: room.isSuddenDeath,
-    history: room.history
+    history: room.history,
+    isSuddenDeath: room.isSuddenDeath
   });
 
   room.questionDisplayTimeout = setTimeout(() => {
@@ -304,8 +298,8 @@ function startQuestion(room) {
         shooter: room.currentShooter,
         score: room.score,
         shots: room.shots,
-        isSuddenDeath: room.isSuddenDeath,
-        history: room.history
+        history: room.history,
+        isSuddenDeath: room.isSuddenDeath
       });
 
       room.questionTimeout = setTimeout(() => {
@@ -416,8 +410,8 @@ function computeRoundResult(room) {
       shooter,
       score: room.score,
       shots: room.shots,
-      isSuddenDeath: room.isSuddenDeath,
-      history: room.history
+      history: room.history,
+      isSuddenDeath: room.isSuddenDeath
     });
 
     scheduleSameShooterNewQuestion(room);
@@ -429,6 +423,10 @@ function computeRoundResult(room) {
   const goalScored = roundWinner === shooter;
   if (goalScored) {
     room.score[shooter] += 1;
+  }
+
+  if (!room.history) {
+    room.history = [];
   }
 
   room.history.push({
@@ -456,8 +454,8 @@ function computeRoundResult(room) {
     preloadVideo: "",
     score: room.score,
     shots: room.shots,
-    isSuddenDeath: room.isSuddenDeath,
-    history: room.history
+    history: room.history,
+    isSuddenDeath: room.isSuddenDeath
   });
 
   room.shotIndex += 1;
@@ -485,10 +483,10 @@ function createRoom(ws) {
     roundResolved: false,
     score: { A: 0, B: 0 },
     shots: { A: 0, B: 0 },
+    history: [],
     isSuddenDeath: false,
     suddenDeathPairShots: { A: 0, B: 0 },
-    suddenDeathPairGoals: { A: 0, B: 0 },
-    history: []
+    suddenDeathPairGoals: { A: 0, B: 0 }
   };
 
   rooms.set(code, room);
@@ -537,6 +535,31 @@ wss.on("connection", (ws) => {
 
       if (data.type === "CREATE_BATTLE") {
         createRoom(ws);
+        return;
+      }
+
+      if (data.type === "CREATE_SOLO_BATTLE") {
+        createRoom(ws);
+
+        const info = clients.get(ws);
+        const room = info && info.room ? rooms.get(info.room) : null;
+
+        if (!room) {
+          send(ws, { type: "ERROR", message: "Impossible de créer la room solo" });
+          return;
+        }
+
+        room.players.B = { ws };
+        broadcast(room, { type: "BATTLE_READY" });
+
+        setTimeout(() => {
+          try {
+            startQuestion(room);
+          } catch (err) {
+            log("startQuestion solo crash:", err);
+          }
+        }, 1000);
+
         return;
       }
 
