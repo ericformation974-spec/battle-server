@@ -5,35 +5,35 @@
       "answers": ["Pékin", "Tokyo", "Séoul", "Bangkok"],
       "correctAnswer": 1
     },
- {
+    {
       "questionText": "Quelle est la capitale de la France ?",
       "answers": ["Pékin", "Tokyo", "Séoul", "Paris"],
-      "correctAnswer": 4
-    },
- {
-      "questionText": "Quelle est la capitale de l'Italie ?",
-      "answers": ["Pékin", "Rome", "Séoul", "Bangkok"],
-      "correctAnswer": 2
-    },
- {
-      "questionText": "Quelle est la capitale de l'Allemagne ?",
-      "answers": ["Berlin", "Tokyo", "Séoul", "Bangkok"],
-      "correctAnswer": 1
-    },
- {
-      "questionText": "Quelle est la capitale de l'Espagne ?",
-      "answers": ["Pékin", "Tokyo", "Séoul", "Madrid"],
-      "correctAnswer": 4
-    },
- {
-      "questionText": "7 X 6  ?",
-      "answers": ["34", "87", "42", "51"],
       "correctAnswer": 3
     },
- {
+    {
+      "questionText": "Quelle est la capitale de l'Italie ?",
+      "answers": ["Pékin", "Rome", "Séoul", "Bangkok"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Quelle est la capitale de l'Allemagne ?",
+      "answers": ["Berlin", "Tokyo", "Séoul", "Bangkok"],
+      "correctAnswer": 0
+    },
+    {
+      "questionText": "Quelle est la capitale de l'Espagne ?",
+      "answers": ["Pékin", "Tokyo", "Séoul", "Madrid"],
+      "correctAnswer": 3
+    },
+    {
+      "questionText": "7 X 6 ?",
+      "answers": ["34", "87", "42", "51"],
+      "correctAnswer": 2
+    },
+    {
       "questionText": "10 X 4",
       "answers": ["55", "40", "44", "43"],
-      "correctAnswer": 2
+      "correctAnswer": 1
     }
   ]
 }
