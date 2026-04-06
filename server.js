@@ -84,29 +84,25 @@ function shuffleArray(array) {
   return arr;
 }
 
-function shuffleQuestion(question) {
-  const indexedAnswers = question.answers.map((answer, index) => ({
+function shuffleQuestionForRound(question) {
+  const answersWithOriginalIndex = question.answers.map((answer, index) => ({
     answer,
     originalIndex: index
   }));
 
-  const shuffledAnswers = shuffleArray(indexedAnswers);
-
-  const newCorrectAnswer = shuffledAnswers.findIndex(
-    (item) => item.originalIndex === question.correctAnswer
-  );
+  const shuffled = shuffleArray(answersWithOriginalIndex);
 
   return {
-    ...question,
-    answers: shuffledAnswers.map((item) => item.answer),
-    correctAnswer: newCorrectAnswer
+    questionText: question.questionText,
+    answers: shuffled.map((item) => item.answer),
+    correctAnswer: shuffled.findIndex(
+      (item) => item.originalIndex === question.correctAnswer
+    )
   };
 }
 
 function cloneQuestions() {
-  const cloned = JSON.parse(JSON.stringify(masterQuestions));
-  const randomizedQuestions = cloned.map((question) => shuffleQuestion(question));
-  return shuffleArray(randomizedQuestions);
+  return shuffleArray(JSON.parse(JSON.stringify(masterQuestions)));
 }
 
 function send(ws, data) {
@@ -297,15 +293,21 @@ function startQuestion(room) {
   clearTransitionTimeout(room);
   clearQuestionDisplayTimeout(room);
 
-  const q = getNextQuestion(room);
-  if (!q) {
+  const baseQuestion = getNextQuestion(room);
+  if (!baseQuestion) {
     throw new Error("Question introuvable");
   }
+
+  const q = shuffleQuestionForRound(baseQuestion);
 
   room.currentShooter = getShooterByShotIndex(room.shotIndex);
   room.correct = q.correctAnswer;
   room.answers = { A: null, B: null };
   room.roundResolved = false;
+
+  console.log("QUESTION :", q.questionText);
+  console.log("ANSWERS MELANGEES :", q.answers);
+  console.log("BON INDEX :", q.correctAnswer);
 
   const idleVideo = getIdleVideoForShooter(room.currentShooter);
 
