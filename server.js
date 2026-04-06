@@ -229,7 +229,8 @@ function finishSession(room) {
     displayText: finalText,
     score: room.score,
     shots: room.shots,
-    finalVideo
+    finalVideo,
+    history: room.history
   });
 }
 
@@ -259,10 +260,6 @@ function getNextQuestion(room) {
   return room.questions[questionIndex];
 }
 
-/**
- * Envoie d'abord l'ordre de jouer la vidéo idle,
- * puis un peu après l'affichage de la question.
- */
 function startQuestion(room) {
   clearQuestionTimeout(room);
   clearTransitionTimeout(room);
@@ -286,7 +283,6 @@ function startQuestion(room) {
     idleVideo
   });
 
-  // 1) on force le lecteur à lancer la vidéo
   broadcast(room, {
     type: "IDLE_VIDEO",
     currentVideo: idleVideo,
@@ -294,10 +290,10 @@ function startQuestion(room) {
     shooter: room.currentShooter,
     score: room.score,
     shots: room.shots,
-    isSuddenDeath: room.isSuddenDeath
+    isSuddenDeath: room.isSuddenDeath,
+    history: room.history
   });
 
-  // 2) ensuite on affiche la question
   room.questionDisplayTimeout = setTimeout(() => {
     try {
       broadcast(room, {
@@ -308,7 +304,8 @@ function startQuestion(room) {
         shooter: room.currentShooter,
         score: room.score,
         shots: room.shots,
-        isSuddenDeath: room.isSuddenDeath
+        isSuddenDeath: room.isSuddenDeath,
+        history: room.history
       });
 
       room.questionTimeout = setTimeout(() => {
@@ -419,7 +416,8 @@ function computeRoundResult(room) {
       shooter,
       score: room.score,
       shots: room.shots,
-      isSuddenDeath: room.isSuddenDeath
+      isSuddenDeath: room.isSuddenDeath,
+      history: room.history
     });
 
     scheduleSameShooterNewQuestion(room);
@@ -432,6 +430,11 @@ function computeRoundResult(room) {
   if (goalScored) {
     room.score[shooter] += 1;
   }
+
+  room.history.push({
+    team: shooter,
+    success: goalScored
+  });
 
   if (room.isSuddenDeath) {
     room.suddenDeathPairShots[shooter] += 1;
@@ -453,7 +456,8 @@ function computeRoundResult(room) {
     preloadVideo: "",
     score: room.score,
     shots: room.shots,
-    isSuddenDeath: room.isSuddenDeath
+    isSuddenDeath: room.isSuddenDeath,
+    history: room.history
   });
 
   room.shotIndex += 1;
@@ -483,7 +487,8 @@ function createRoom(ws) {
     shots: { A: 0, B: 0 },
     isSuddenDeath: false,
     suddenDeathPairShots: { A: 0, B: 0 },
-    suddenDeathPairGoals: { A: 0, B: 0 }
+    suddenDeathPairGoals: { A: 0, B: 0 },
+    history: []
   };
 
   rooms.set(code, room);
