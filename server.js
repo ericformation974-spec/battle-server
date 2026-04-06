@@ -16,9 +16,10 @@ const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.PORT || 3000;
 const ANSWER_TIME_LIMIT_MS = 5000;
+const PENALTY_RESULT_VIDEO_MS = 7000;
 
 const REGULAR_SHOTS_PER_TEAM = 5;
-const REGULAR_TOTAL_ROUNDS = REGULAR_SHOTS_PER_TEAM * 2;
+const REGULAR_TOTAL_SHOTS = REGULAR_SHOTS_PER_TEAM * 2;
 
 const rooms = new Map();
 const clients = new Map();
@@ -122,61 +123,39 @@ function clearQuestionTimeout(room) {
   }
 }
 
-function getShooterByRound(roundIndex) {
-  return roundIndex % 2 === 0 ? "A" : "B";
+function clearTransitionTimeout(room) {
+  if (room.transitionTimeout) {
+    clearTimeout(room.transitionTimeout);
+    room.transitionTimeout = null;
+  }
 }
 
-function getNextShooter(room) {
-  const nextIndex = room.index + 1;
-  if (room.isSuddenDeath) {
-    return getShooterByRound(nextIndex);
-  }
-  if (nextIndex >= REGULAR_TOTAL_ROUNDS) {
-    return null;
-  }
-  return getShooterByRound(nextIndex);
+function getShooterByShotIndex(shotIndex) {
+  return shotIndex % 2 === 0 ? "A" : "B";
 }
 
 function getIdleVideoForShooter(shooter) {
   if (shooter === "A") return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 5);
-  if (shooter === "B") return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 5);
-  return "";
+  return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 5);
 }
 
-function getRoundVideos(room, roundWinner) {
-  const shooter = room.currentShooter;
-  const nextShooter = getNextShooter(room);
-
-  let currentVideo = "";
-  let preloadVideo = "";
-
+function getPenaltyVideo(shooter, goalScored) {
   if (shooter === "A") {
-    currentVideo =
-      roundWinner === "A"
-        ? getRandomVideoPath(VIDEO_PATHS.F_YES, 10)
-        : getRandomVideoPath(VIDEO_PATHS.F_NO, 10);
-  } else if (shooter === "B") {
-    currentVideo =
-      roundWinner === "B"
-        ? getRandomVideoPath(VIDEO_PATHS.B_YES, 10)
-        : getRandomVideoPath(VIDEO_PATHS.B_NO, 10);
+    return goalScored
+      ? getRandomVideoPath(VIDEO_PATHS.F_YES, 10)
+      : getRandomVideoPath(VIDEO_PATHS.F_NO, 10);
   }
 
-  if (nextShooter) {
-    preloadVideo = getIdleVideoForShooter(nextShooter);
-  }
-
-  return { currentVideo, preloadVideo };
+  return goalScored
+    ? getRandomVideoPath(VIDEO_PATHS.B_YES, 10)
+    : getRandomVideoPath(VIDEO_PATHS.B_NO, 10);
 }
 
-function getRoundDisplayText(room, roundWinner) {
-  const shooter = room.currentShooter;
-
+function getPenaltyDisplayText(shooter, goalScored) {
   if (shooter === "A") {
-    return roundWinner === "A" ? "BUT FRANCE" : "FRANCE RATE";
+    return goalScored ? "BUT FRANCE" : "FRANCE RATE";
   }
-
-  return roundWinner === "B" ? "BUT BRESIL" : "BRESIL RATE";
+  return goalScored ? "BUT BRESIL" : "BRESIL RATE";
 }
 
 function getFinalVideo(finalWinner) {
@@ -201,28 +180,25 @@ function canEndEarlyDuringRegular(room) {
   return false;
 }
 
-function shouldEnterSuddenDeath(room) {
-  if (room.isSuddenDeath) return false;
-  if (room.index < REGULAR_TOTAL_ROUNDS - 1) return false;
-  return room.score.A === room.score.B;
-}
-
-function getSuddenDeathWinner(room) {
-  if (!room.isSuddenDeath) return null;
-  if (room.suddenDeathPairShots.A === 1 && room.suddenDeathPairShots.B === 1) {
-    if (room.suddenDeathPairGoals.A > room.suddenDeathPairGoals.B) return "A";
-    if (room.suddenDeathPairGoals.B > room.suddenDeathPairGoals.A) return "B";
-  }
-  return null;
-}
-
 function resetSuddenDeathPair(room) {
   room.suddenDeathPairShots = { A: 0, B: 0 };
   room.suddenDeathPairGoals = { A: 0, B: 0 };
 }
 
+function getSuddenDeathWinner(room) {
+  if (!room.isSuddenDeath) return null;
+
+  if (room.suddenDeathPairShots.A === 1 && room.suddenDeathPairShots.B === 1) {
+    if (room.suddenDeathPairGoals.A > room.suddenDeathPairGoals.B) return "A";
+    if (room.suddenDeathPairGoals.B > room.suddenDeathPairGoals.A) return "B";
+  }
+
+  return null;
+}
+
 function finishSession(room) {
   clearQuestionTimeout(room);
+  clearTransitionTimeout(room);
 
   let finalWinner = "draw";
   let finalText = "SEANCE TERMINEE - EGALITE";
@@ -251,61 +227,59 @@ function finishSession(room) {
     displayText: finalText,
     score: room.score,
     shots: room.shots,
-    finalVideo
+    video: finalVideo
   });
 }
 
 function resolveRoundTimeout(room) {
-  if (!room || room.roundResolved) {
-    return;
-  }
+  if (!room || room.roundResolved) return;
 
   log("QUESTION_TIMEOUT room", room.code);
 
   if (room.answers.A === null) {
-    room.answers.A = {
-      answer: -1,
-      time: ANSWER_TIME_LIMIT_MS
-    };
+    room.answers.A = { answer: -1, time: ANSWER_TIME_LIMIT_MS };
   }
 
   if (room.answers.B === null) {
-    room.answers.B = {
-      answer: -1,
-      time: ANSWER_TIME_LIMIT_MS
-    };
+    room.answers.B = { answer: -1, time: ANSWER_TIME_LIMIT_MS };
   }
 
   computeRoundResult(room);
 }
 
-function startNextQuestion(room) {
-  room.index += 1;
+function getNextQuestion(room) {
+  const questionIndex = room.questionCursor % room.questions.length;
+  room.questionCursor += 1;
+  return room.questions[questionIndex];
+}
 
-  if (!room.isSuddenDeath && room.index >= REGULAR_TOTAL_ROUNDS) {
-    if (room.score.A === room.score.B) {
-      room.isSuddenDeath = true;
-      resetSuddenDeathPair(room);
-      log("SUDDEN_DEATH_STARTED room", room.code);
-    } else {
-      finishSession(room);
-      return;
-    }
-  }
+function startQuestion(room) {
+  clearQuestionTimeout(room);
+  clearTransitionTimeout(room);
 
-  const questionIndex = room.index % room.questions.length;
-  const q = room.questions[questionIndex];
-
+  const q = getNextQuestion(room);
   if (!q) {
-    throw new Error(`Question introuvable à l'index ${questionIndex}`);
+    throw new Error("Question introuvable");
   }
 
-  room.currentShooter = getShooterByRound(room.index);
+  room.currentShooter = getShooterByShotIndex(room.shotIndex);
   room.correct = q.correctAnswer;
   room.answers = { A: null, B: null };
   room.roundResolved = false;
 
-  clearQuestionTimeout(room);
+  const idleVideo = getIdleVideoForShooter(room.currentShooter);
+
+  broadcast(room, {
+    type: "QUESTION_STARTED",
+    video: idleVideo,
+    questionText: q.questionText,
+    answers: q.answers,
+    timeLimitMs: ANSWER_TIME_LIMIT_MS,
+    shooter: room.currentShooter,
+    score: room.score,
+    shots: room.shots,
+    isSuddenDeath: room.isSuddenDeath
+  });
 
   room.questionTimeout = setTimeout(() => {
     try {
@@ -314,25 +288,52 @@ function startNextQuestion(room) {
       log("resolveRoundTimeout crash:", err);
     }
   }, ANSWER_TIME_LIMIT_MS);
+}
 
-  broadcast(room, {
-    type: "QUESTION_STARTED",
-    questionText: q.questionText,
-    answers: q.answers,
-    timeLimitMs: ANSWER_TIME_LIMIT_MS,
-    round: room.index + 1,
-    shooter: room.currentShooter,
-    score: room.score,
-    shots: room.shots,
-    isSuddenDeath: room.isSuddenDeath,
-    preloadVideo: getIdleVideoForShooter(room.currentShooter)
-  });
+function scheduleNextShotAfterPenalty(room) {
+  clearTransitionTimeout(room);
+
+  room.transitionTimeout = setTimeout(() => {
+    try {
+      if (canEndEarlyDuringRegular(room)) {
+        finishSession(room);
+        return;
+      }
+
+      const suddenDeathWinner = getSuddenDeathWinner(room);
+      if (suddenDeathWinner) {
+        finishSession(room);
+        return;
+      }
+
+      if (!room.isSuddenDeath && room.shotIndex >= REGULAR_TOTAL_SHOTS) {
+        if (room.score.A === room.score.B) {
+          room.isSuddenDeath = true;
+          resetSuddenDeathPair(room);
+        } else {
+          finishSession(room);
+          return;
+        }
+      }
+
+      if (
+        room.isSuddenDeath &&
+        room.suddenDeathPairShots.A === 1 &&
+        room.suddenDeathPairShots.B === 1 &&
+        room.suddenDeathPairGoals.A === room.suddenDeathPairGoals.B
+      ) {
+        resetSuddenDeathPair(room);
+      }
+
+      startQuestion(room);
+    } catch (err) {
+      log("scheduleNextShotAfterPenalty crash:", err);
+    }
+  }, PENALTY_RESULT_VIDEO_MS);
 }
 
 function computeRoundResult(room) {
-  if (room.roundResolved) {
-    return;
-  }
+  if (room.roundResolved) return;
 
   room.roundResolved = true;
   clearQuestionTimeout(room);
@@ -348,25 +349,58 @@ function computeRoundResult(room) {
   const Aok = A.answer === correct;
   const Bok = B.answer === correct;
 
-  let winner = "draw";
+  let roundWinner = null;
 
   if (Aok && !Bok) {
-    winner = "A";
+    roundWinner = "A";
   } else if (Bok && !Aok) {
-    winner = "B";
+    roundWinner = "B";
   } else if (Aok && Bok) {
-    if (A.time < B.time) winner = "A";
-    else if (B.time < A.time) winner = "B";
+    if (A.time < B.time) roundWinner = "A";
+    else if (B.time < A.time) roundWinner = "B";
+    else roundWinner = null; // égalité parfaite
+  } else {
+    roundWinner = null; // les 2 faux
+  }
+
+  // Personne ne gagne la question => on repose une nouvelle question
+  // au même tireur, sans compter de tir.
+  if (roundWinner === null) {
+    log("NO_WINNER_NEW_QUESTION", {
+      room: room.code,
+      shooter: room.currentShooter,
+      A,
+      B
+    });
+
+    broadcast(room, {
+      type: "NO_WINNER",
+      displayText: "AUCUN GAGNANT - NOUVELLE QUESTION",
+      shooter: room.currentShooter,
+      score: room.score,
+      shots: room.shots,
+      isSuddenDeath: room.isSuddenDeath
+    });
+
+    setTimeout(() => {
+      try {
+        startQuestion(room);
+      } catch (err) {
+        log("startQuestion after NO_WINNER crash:", err);
+      }
+    }, 300);
+
+    return;
   }
 
   const shooter = room.currentShooter;
 
+  // Ici le tir est validé car il y a un gagnant à la question
   room.shots[shooter] += 1;
 
-  let goalScored = false;
-  if (winner === shooter) {
+  const goalScored = roundWinner === shooter;
+  if (goalScored) {
     room.score[shooter] += 1;
-    goalScored = true;
   }
 
   if (room.isSuddenDeath) {
@@ -376,56 +410,35 @@ function computeRoundResult(room) {
     }
   }
 
-  const text = getRoundDisplayText(room, winner);
-  const { currentVideo, preloadVideo } = getRoundVideos(room, winner);
+  const video = getPenaltyVideo(shooter, goalScored);
+  const text = getPenaltyDisplayText(shooter, goalScored);
 
-  log("ROUND_RESULT payload", {
+  log("ROUND_RESULT", {
     room: room.code,
     shooter,
-    winner,
-    currentVideo,
-    preloadVideo,
-    score: room.score,
-    shots: room.shots,
-    isSuddenDeath: room.isSuddenDeath,
-    suddenDeathPairShots: room.suddenDeathPairShots,
-    suddenDeathPairGoals: room.suddenDeathPairGoals
-  });
-
-  broadcast(room, {
-    type: "ROUND_RESULT",
-    displayText: text,
-    roundWinner: winner,
-    shooter,
-    currentVideo,
-    preloadVideo,
+    roundWinner,
+    goalScored,
+    video,
     score: room.score,
     shots: room.shots,
     isSuddenDeath: room.isSuddenDeath
   });
 
-  setTimeout(() => {
-    try {
-      if (canEndEarlyDuringRegular(room)) {
-        finishSession(room);
-        return;
-      }
+  broadcast(room, {
+    type: "ROUND_RESULT",
+    displayText: text,
+    shooter,
+    roundWinner,
+    goalScored,
+    video,
+    score: room.score,
+    shots: room.shots,
+    isSuddenDeath: room.isSuddenDeath
+  });
 
-      const suddenDeathWinner = getSuddenDeathWinner(room);
-      if (suddenDeathWinner) {
-        finishSession(room);
-        return;
-      }
-
-      if (room.isSuddenDeath && room.suddenDeathPairShots.A === 1 && room.suddenDeathPairShots.B === 1) {
-        resetSuddenDeathPair(room);
-      }
-
-      startNextQuestion(room);
-    } catch (err) {
-      log("startNextQuestion after result crash:", err);
-    }
-  }, 2000);
+  // On passe au tir suivant seulement après une vraie résolution
+  room.shotIndex += 1;
+  scheduleNextShotAfterPenalty(room);
 }
 
 function createRoom(ws) {
@@ -438,14 +451,20 @@ function createRoom(ws) {
       B: null
     },
     questions: cloneQuestions(),
-    index: -1,
+
+    questionCursor: 0,
+    shotIndex: 0,
     currentShooter: "A",
+
     answers: { A: null, B: null },
     correct: 0,
     questionTimeout: null,
+    transitionTimeout: null,
     roundResolved: false,
+
     score: { A: 0, B: 0 },
     shots: { A: 0, B: 0 },
+
     isSuddenDeath: false,
     suddenDeathPairShots: { A: 0, B: 0 },
     suddenDeathPairGoals: { A: 0, B: 0 }
@@ -479,6 +498,7 @@ function cleanupClient(ws) {
 
       if (!room.players.A && !room.players.B) {
         clearQuestionTimeout(room);
+        clearTransitionTimeout(room);
         rooms.delete(room.code);
         log("ROOM_REMOVED", room.code);
       }
@@ -530,9 +550,9 @@ wss.on("connection", (ws) => {
 
         setTimeout(() => {
           try {
-            startNextQuestion(room);
+            startQuestion(room);
           } catch (err) {
-            log("startNextQuestion duo crash:", err);
+            log("startQuestion duo crash:", err);
           }
         }, 1000);
 
