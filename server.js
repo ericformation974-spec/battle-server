@@ -462,34 +462,6 @@ function computeRoundResult(room) {
   scheduleNextQuestionAfterPenalty(room);
 }
 
-  if (room.isSuddenDeath) {
-    room.suddenDeathPairShots[shooter] += 1;
-    if (goalScored) {
-      room.suddenDeathPairGoals[shooter] += 1;
-    }
-  }
-
-  const currentVideo = getPenaltyVideoForShooter(shooter, goalScored);
-  const text = getPenaltyDisplayText(shooter, goalScored);
-
-  broadcast(room, {
-    type: "ROUND_RESULT",
-    displayText: text,
-    shooter,
-    roundWinner,
-    goalScored,
-    currentVideo,
-    preloadVideo: "",
-    score: room.score,
-    shots: room.shots,
-    history: room.history,
-    isSuddenDeath: room.isSuddenDeath
-  });
-
-  room.shotIndex += 1;
-  scheduleNextQuestionAfterPenalty(room);
-}
-
 function createRoom(ws) {
   const code = createUniqueRoomCode();
 
