@@ -5,15 +5,35 @@
       "answers": ["Pékin", "Tokyo", "Séoul", "Bangkok"],
       "correctAnswer": 1
     },
-    {
-      "questionText": "2 + 2 = ?",
-      "answers": ["3", "4", "5", "6"],
+ {
+      "questionText": "Quelle est la capitale de la France ?",
+      "answers": ["Pékin", "Tokyo", "Séoul", "Paris"],
+      "correctAnswer": 4
+    },
+ {
+      "questionText": "Quelle est la capitale de l'Italie ?",
+      "answers": ["Pékin", "Rome", "Séoul", "Bangkok"],
+      "correctAnswer": 2
+    },
+ {
+      "questionText": "Quelle est la capitale de l'Allemagne ?",
+      "answers": ["Berlin", "Tokyo", "Séoul", "Bangkok"],
       "correctAnswer": 1
     },
-    {
-      "questionText": "Quelle couleur obtient-on avec bleu + jaune ?",
-      "answers": ["Vert", "Rouge", "Violet", "Orange"],
-      "correctAnswer": 0
+ {
+      "questionText": "Quelle est la capitale de l'Espagne ?",
+      "answers": ["Pékin", "Tokyo", "Séoul", "Madrid"],
+      "correctAnswer": 4
+    },
+ {
+      "questionText": "7 X 6  ?",
+      "answers": ["34", "87", "42", "51"],
+      "correctAnswer": 3
+    },
+ {
+      "questionText": "10 X 4",
+      "answers": ["55", "40", "44", "43"],
+      "correctAnswer": 2
     }
   ]
 }
