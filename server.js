@@ -227,7 +227,7 @@ function finishSession(room) {
     displayText: finalText,
     score: room.score,
     shots: room.shots,
-    video: finalVideo
+    finalVideo
   });
 }
 
@@ -237,11 +237,17 @@ function resolveRoundTimeout(room) {
   log("QUESTION_TIMEOUT room", room.code);
 
   if (room.answers.A === null) {
-    room.answers.A = { answer: -1, time: ANSWER_TIME_LIMIT_MS };
+    room.answers.A = {
+      answer: -1,
+      time: ANSWER_TIME_LIMIT_MS
+    };
   }
 
   if (room.answers.B === null) {
-    room.answers.B = { answer: -1, time: ANSWER_TIME_LIMIT_MS };
+    room.answers.B = {
+      answer: -1,
+      time: ANSWER_TIME_LIMIT_MS
+    };
   }
 
   computeRoundResult(room);
@@ -269,9 +275,18 @@ function startQuestion(room) {
 
   const idleVideo = getIdleVideoForShooter(room.currentShooter);
 
+  log("QUESTION_STARTED", {
+    room: room.code,
+    shooter: room.currentShooter,
+    idleVideo,
+    score: room.score,
+    shots: room.shots,
+    isSuddenDeath: room.isSuddenDeath
+  });
+
   broadcast(room, {
     type: "QUESTION_STARTED",
-    video: idleVideo,
+    preloadVideo: idleVideo,
     questionText: q.questionText,
     answers: q.answers,
     timeLimitMs: ANSWER_TIME_LIMIT_MS,
@@ -310,6 +325,7 @@ function scheduleNextShotAfterPenalty(room) {
         if (room.score.A === room.score.B) {
           room.isSuddenDeath = true;
           resetSuddenDeathPair(room);
+          log("SUDDEN_DEATH_STARTED room", room.code);
         } else {
           finishSession(room);
           return;
@@ -358,19 +374,17 @@ function computeRoundResult(room) {
   } else if (Aok && Bok) {
     if (A.time < B.time) roundWinner = "A";
     else if (B.time < A.time) roundWinner = "B";
-    else roundWinner = null; // égalité parfaite
+    else roundWinner = null;
   } else {
-    roundWinner = null; // les 2 faux
+    roundWinner = null;
   }
 
-  // Personne ne gagne la question => on repose une nouvelle question
-  // au même tireur, sans compter de tir.
+  // Aucun gagnant : même tireur, nouvelle question
   if (roundWinner === null) {
     log("NO_WINNER_NEW_QUESTION", {
       room: room.code,
       shooter: room.currentShooter,
-      A,
-      B
+      answers: room.answers
     });
 
     broadcast(room, {
@@ -395,7 +409,6 @@ function computeRoundResult(room) {
 
   const shooter = room.currentShooter;
 
-  // Ici le tir est validé car il y a un gagnant à la question
   room.shots[shooter] += 1;
 
   const goalScored = roundWinner === shooter;
@@ -418,10 +431,12 @@ function computeRoundResult(room) {
     shooter,
     roundWinner,
     goalScored,
-    video,
+    currentVideo: video,
     score: room.score,
     shots: room.shots,
-    isSuddenDeath: room.isSuddenDeath
+    isSuddenDeath: room.isSuddenDeath,
+    suddenDeathPairShots: room.suddenDeathPairShots,
+    suddenDeathPairGoals: room.suddenDeathPairGoals
   });
 
   broadcast(room, {
@@ -430,13 +445,13 @@ function computeRoundResult(room) {
     shooter,
     roundWinner,
     goalScored,
-    video,
+    currentVideo: video,
+    preloadVideo: "",
     score: room.score,
     shots: room.shots,
     isSuddenDeath: room.isSuddenDeath
   });
 
-  // On passe au tir suivant seulement après une vraie résolution
   room.shotIndex += 1;
   scheduleNextShotAfterPenalty(room);
 }
