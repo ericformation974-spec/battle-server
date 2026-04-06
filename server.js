@@ -31,7 +31,6 @@ const VIDEO_PATHS = {
   B_NO: "VIDEO/B_no",
   F_IDLE: "VIDEO/F_idle",
   B_IDLE: "VIDEO/B_idle",
-
   FINAL_F_WIN: "VIDEO/FINAL/F_win",
   FINAL_B_WIN: "VIDEO/FINAL/B_win",
   FINAL_DRAW: "VIDEO/FINAL/draw"
@@ -280,7 +279,7 @@ function startQuestion(room) {
   log("QUESTION_STARTED", {
     room: room.code,
     shooter: room.currentShooter,
-    preloadVideo: idleVideo,
+    idleVideo,
     score: room.score,
     shots: room.shots,
     isSuddenDeath: room.isSuddenDeath
@@ -289,6 +288,7 @@ function startQuestion(room) {
   broadcast(room, {
     type: "QUESTION_STARTED",
     preloadVideo: idleVideo,
+    currentVideo: idleVideo,
     questionText: q.questionText,
     answers: q.answers,
     timeLimitMs: ANSWER_TIME_LIMIT_MS,
@@ -395,7 +395,6 @@ function computeRoundResult(room) {
 
   const shooter = room.currentShooter;
 
-  // Aucun gagnant -> on relance immédiatement le même pays
   if (roundWinner === null) {
     log("NO_WINNER_NEW_QUESTION", {
       room: room.code,
@@ -457,7 +456,6 @@ function computeRoundResult(room) {
     isSuddenDeath: room.isSuddenDeath
   });
 
-  // Le tir est validé, on alterne ensuite vers l'autre pays
   room.shotIndex += 1;
   scheduleNextQuestionAfterPenalty(room);
 }
@@ -472,20 +470,16 @@ function createRoom(ws) {
       B: null
     },
     questions: cloneQuestions(),
-
     questionCursor: 0,
     shotIndex: 0,
     currentShooter: "A",
-
     answers: { A: null, B: null },
     correct: 0,
     questionTimeout: null,
     transitionTimeout: null,
     roundResolved: false,
-
     score: { A: 0, B: 0 },
     shots: { A: 0, B: 0 },
-
     isSuddenDeath: false,
     suddenDeathPairShots: { A: 0, B: 0 },
     suddenDeathPairGoals: { A: 0, B: 0 }
