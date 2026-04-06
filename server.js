@@ -73,8 +73,40 @@ function loadQuestions() {
 
 const masterQuestions = loadQuestions();
 
+function shuffleArray(array) {
+  const arr = [...array];
+
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+
+  return arr;
+}
+
+function shuffleQuestion(question) {
+  const indexedAnswers = question.answers.map((answer, index) => ({
+    answer,
+    originalIndex: index
+  }));
+
+  const shuffledAnswers = shuffleArray(indexedAnswers);
+
+  const newCorrectAnswer = shuffledAnswers.findIndex(
+    (item) => item.originalIndex === question.correctAnswer
+  );
+
+  return {
+    ...question,
+    answers: shuffledAnswers.map((item) => item.answer),
+    correctAnswer: newCorrectAnswer
+  };
+}
+
 function cloneQuestions() {
-  return JSON.parse(JSON.stringify(masterQuestions));
+  const cloned = JSON.parse(JSON.stringify(masterQuestions));
+  const randomizedQuestions = cloned.map((question) => shuffleQuestion(question));
+  return shuffleArray(randomizedQuestions);
 }
 
 function send(ws, data) {
