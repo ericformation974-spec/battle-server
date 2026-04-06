@@ -16,7 +16,7 @@ const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.PORT || 3000;
 const ANSWER_TIME_LIMIT_MS = 5000;
-const PENALTY_RESULT_VIDEO_MS = 7000;
+const PENALTY_RESULT_VIDEO_MS = 8000;
 
 const REGULAR_SHOTS_PER_TEAM = 5;
 const REGULAR_TOTAL_SHOTS = REGULAR_SHOTS_PER_TEAM * 2;
@@ -135,11 +135,13 @@ function getShooterByShotIndex(shotIndex) {
 }
 
 function getIdleVideoForShooter(shooter) {
-  if (shooter === "A") return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 5);
+  if (shooter === "A") {
+    return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 5);
+  }
   return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 5);
 }
 
-function getPenaltyVideo(shooter, goalScored) {
+function getPenaltyVideoForShooter(shooter, goalScored) {
   if (shooter === "A") {
     return goalScored
       ? getRandomVideoPath(VIDEO_PATHS.F_YES, 10)
@@ -278,7 +280,7 @@ function startQuestion(room) {
   log("QUESTION_STARTED", {
     room: room.code,
     shooter: room.currentShooter,
-    idleVideo,
+    preloadVideo: idleVideo,
     score: room.score,
     shots: room.shots,
     isSuddenDeath: room.isSuddenDeath
@@ -305,7 +307,7 @@ function startQuestion(room) {
   }, ANSWER_TIME_LIMIT_MS);
 }
 
-function scheduleNextShotAfterPenalty(room) {
+function scheduleNextQuestionAfterPenalty(room) {
   clearTransitionTimeout(room);
 
   room.transitionTimeout = setTimeout(() => {
@@ -343,9 +345,21 @@ function scheduleNextShotAfterPenalty(room) {
 
       startQuestion(room);
     } catch (err) {
-      log("scheduleNextShotAfterPenalty crash:", err);
+      log("scheduleNextQuestionAfterPenalty crash:", err);
     }
   }, PENALTY_RESULT_VIDEO_MS);
+}
+
+function scheduleSameShooterNewQuestion(room) {
+  clearTransitionTimeout(room);
+
+  room.transitionTimeout = setTimeout(() => {
+    try {
+      startQuestion(room);
+    } catch (err) {
+      log("scheduleSameShooterNewQuestion crash:", err);
+    }
+  }, 0);
 }
 
 function computeRoundResult(room) {
@@ -379,35 +393,28 @@ function computeRoundResult(room) {
     roundWinner = null;
   }
 
-  // Aucun gagnant : même tireur, nouvelle question
+  const shooter = room.currentShooter;
+
+  // Aucun gagnant -> on relance immédiatement le même pays
   if (roundWinner === null) {
     log("NO_WINNER_NEW_QUESTION", {
       room: room.code,
-      shooter: room.currentShooter,
+      shooter,
       answers: room.answers
     });
 
     broadcast(room, {
       type: "NO_WINNER",
       displayText: "AUCUN GAGNANT - NOUVELLE QUESTION",
-      shooter: room.currentShooter,
+      shooter,
       score: room.score,
       shots: room.shots,
       isSuddenDeath: room.isSuddenDeath
     });
 
-    setTimeout(() => {
-      try {
-        startQuestion(room);
-      } catch (err) {
-        log("startQuestion after NO_WINNER crash:", err);
-      }
-    }, 300);
-
+    scheduleSameShooterNewQuestion(room);
     return;
   }
-
-  const shooter = room.currentShooter;
 
   room.shots[shooter] += 1;
 
@@ -423,7 +430,7 @@ function computeRoundResult(room) {
     }
   }
 
-  const video = getPenaltyVideo(shooter, goalScored);
+  const currentVideo = getPenaltyVideoForShooter(shooter, goalScored);
   const text = getPenaltyDisplayText(shooter, goalScored);
 
   log("ROUND_RESULT", {
@@ -431,12 +438,10 @@ function computeRoundResult(room) {
     shooter,
     roundWinner,
     goalScored,
-    currentVideo: video,
+    currentVideo,
     score: room.score,
     shots: room.shots,
-    isSuddenDeath: room.isSuddenDeath,
-    suddenDeathPairShots: room.suddenDeathPairShots,
-    suddenDeathPairGoals: room.suddenDeathPairGoals
+    isSuddenDeath: room.isSuddenDeath
   });
 
   broadcast(room, {
@@ -445,15 +450,16 @@ function computeRoundResult(room) {
     shooter,
     roundWinner,
     goalScored,
-    currentVideo: video,
+    currentVideo,
     preloadVideo: "",
     score: room.score,
     shots: room.shots,
     isSuddenDeath: room.isSuddenDeath
   });
 
+  // Le tir est validé, on alterne ensuite vers l'autre pays
   room.shotIndex += 1;
-  scheduleNextShotAfterPenalty(room);
+  scheduleNextQuestionAfterPenalty(room);
 }
 
 function createRoom(ws) {
