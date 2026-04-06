@@ -444,17 +444,17 @@ function computeRoundResult(room) {
   const text = getPenaltyDisplayText(shooter, goalScored);
 
   broadcast(room, {
-  type: "ROUND_RESULT",
-  displayText: text,
-  roundWinner: winner,
-  shooter,
-  currentVideo,
-  preloadVideo,
-  score: room.score,
-  shots: room.shots,
-  history: room.history, // ✅ IMPORTANT
-  isSuddenDeath: room.isSuddenDeath
-});
+    type: "ROUND_RESULT",
+    displayText: text,
+    shooter,
+    roundWinner,
+    goalScored,
+    currentVideo,
+    preloadVideo: "",
+    score: room.score,
+    shots: room.shots,
+    isSuddenDeath: room.isSuddenDeath
+  });
 
   room.shotIndex += 1;
   scheduleNextQuestionAfterPenalty(room);
