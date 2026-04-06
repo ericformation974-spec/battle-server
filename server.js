@@ -17,6 +17,7 @@ const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 const ANSWER_TIME_LIMIT_MS = 5000;
 const PENALTY_RESULT_VIDEO_MS = 8000;
+const QUESTION_AFTER_IDLE_DELAY_MS = 80;
 
 const REGULAR_SHOTS_PER_TEAM = 5;
 const REGULAR_TOTAL_SHOTS = REGULAR_SHOTS_PER_TEAM * 2;
@@ -129,6 +130,13 @@ function clearTransitionTimeout(room) {
   }
 }
 
+function clearQuestionDisplayTimeout(room) {
+  if (room.questionDisplayTimeout) {
+    clearTimeout(room.questionDisplayTimeout);
+    room.questionDisplayTimeout = null;
+  }
+}
+
 function getShooterByShotIndex(shotIndex) {
   return shotIndex % 2 === 0 ? "A" : "B";
 }
@@ -200,6 +208,7 @@ function getSuddenDeathWinner(room) {
 function finishSession(room) {
   clearQuestionTimeout(room);
   clearTransitionTimeout(room);
+  clearQuestionDisplayTimeout(room);
 
   let finalWinner = "draw";
   let finalText = "SEANCE TERMINEE - EGALITE";
@@ -214,14 +223,6 @@ function finishSession(room) {
 
   const finalVideo = getFinalVideo(finalWinner);
 
-  log("QUIZ_FINISHED room", room.code, {
-    finalWinner,
-    finalText,
-    score: room.score,
-    shots: room.shots,
-    finalVideo
-  });
-
   broadcast(room, {
     type: "QUIZ_FINISHED",
     winner: finalWinner,
@@ -234,8 +235,6 @@ function finishSession(room) {
 
 function resolveRoundTimeout(room) {
   if (!room || room.roundResolved) return;
-
-  log("QUESTION_TIMEOUT room", room.code);
 
   if (room.answers.A === null) {
     room.answers.A = {
@@ -260,9 +259,14 @@ function getNextQuestion(room) {
   return room.questions[questionIndex];
 }
 
+/**
+ * Envoie d'abord l'ordre de jouer la vidéo idle,
+ * puis un peu après l'affichage de la question.
+ */
 function startQuestion(room) {
   clearQuestionTimeout(room);
   clearTransitionTimeout(room);
+  clearQuestionDisplayTimeout(room);
 
   const q = getNextQuestion(room);
   if (!q) {
@@ -276,35 +280,48 @@ function startQuestion(room) {
 
   const idleVideo = getIdleVideoForShooter(room.currentShooter);
 
-  log("QUESTION_STARTED", {
+  log("IDLE_VIDEO_START", {
     room: room.code,
     shooter: room.currentShooter,
-    idleVideo,
-    score: room.score,
-    shots: room.shots,
-    isSuddenDeath: room.isSuddenDeath
+    idleVideo
   });
 
+  // 1) on force le lecteur à lancer la vidéo
   broadcast(room, {
-    type: "QUESTION_STARTED",
-    preloadVideo: idleVideo,
+    type: "IDLE_VIDEO",
     currentVideo: idleVideo,
-    questionText: q.questionText,
-    answers: q.answers,
-    timeLimitMs: ANSWER_TIME_LIMIT_MS,
+    preloadVideo: idleVideo,
     shooter: room.currentShooter,
     score: room.score,
     shots: room.shots,
     isSuddenDeath: room.isSuddenDeath
   });
 
-  room.questionTimeout = setTimeout(() => {
+  // 2) ensuite on affiche la question
+  room.questionDisplayTimeout = setTimeout(() => {
     try {
-      resolveRoundTimeout(room);
+      broadcast(room, {
+        type: "QUESTION_STARTED",
+        questionText: q.questionText,
+        answers: q.answers,
+        timeLimitMs: ANSWER_TIME_LIMIT_MS,
+        shooter: room.currentShooter,
+        score: room.score,
+        shots: room.shots,
+        isSuddenDeath: room.isSuddenDeath
+      });
+
+      room.questionTimeout = setTimeout(() => {
+        try {
+          resolveRoundTimeout(room);
+        } catch (err) {
+          log("resolveRoundTimeout crash:", err);
+        }
+      }, ANSWER_TIME_LIMIT_MS);
     } catch (err) {
-      log("resolveRoundTimeout crash:", err);
+      log("QUESTION_STARTED crash:", err);
     }
-  }, ANSWER_TIME_LIMIT_MS);
+  }, QUESTION_AFTER_IDLE_DELAY_MS);
 }
 
 function scheduleNextQuestionAfterPenalty(room) {
@@ -327,7 +344,6 @@ function scheduleNextQuestionAfterPenalty(room) {
         if (room.score.A === room.score.B) {
           room.isSuddenDeath = true;
           resetSuddenDeathPair(room);
-          log("SUDDEN_DEATH_STARTED room", room.code);
         } else {
           finishSession(room);
           return;
@@ -367,6 +383,7 @@ function computeRoundResult(room) {
 
   room.roundResolved = true;
   clearQuestionTimeout(room);
+  clearQuestionDisplayTimeout(room);
 
   const A = room.answers.A;
   const B = room.answers.B;
@@ -396,12 +413,6 @@ function computeRoundResult(room) {
   const shooter = room.currentShooter;
 
   if (roundWinner === null) {
-    log("NO_WINNER_NEW_QUESTION", {
-      room: room.code,
-      shooter,
-      answers: room.answers
-    });
-
     broadcast(room, {
       type: "NO_WINNER",
       displayText: "AUCUN GAGNANT - NOUVELLE QUESTION",
@@ -431,17 +442,6 @@ function computeRoundResult(room) {
 
   const currentVideo = getPenaltyVideoForShooter(shooter, goalScored);
   const text = getPenaltyDisplayText(shooter, goalScored);
-
-  log("ROUND_RESULT", {
-    room: room.code,
-    shooter,
-    roundWinner,
-    goalScored,
-    currentVideo,
-    score: room.score,
-    shots: room.shots,
-    isSuddenDeath: room.isSuddenDeath
-  });
 
   broadcast(room, {
     type: "ROUND_RESULT",
@@ -477,6 +477,7 @@ function createRoom(ws) {
     correct: 0,
     questionTimeout: null,
     transitionTimeout: null,
+    questionDisplayTimeout: null,
     roundResolved: false,
     score: { A: 0, B: 0 },
     shots: { A: 0, B: 0 },
@@ -487,8 +488,6 @@ function createRoom(ws) {
 
   rooms.set(code, room);
   clients.set(ws, { room: code, id: "A" });
-
-  log("ROOM_CREATED", code);
 
   send(ws, {
     type: "ROOM_CREATED",
@@ -514,8 +513,8 @@ function cleanupClient(ws) {
       if (!room.players.A && !room.players.B) {
         clearQuestionTimeout(room);
         clearTransitionTimeout(room);
+        clearQuestionDisplayTimeout(room);
         rooms.delete(room.code);
-        log("ROOM_REMOVED", room.code);
       }
     }
   }
@@ -524,15 +523,12 @@ function cleanupClient(ws) {
 }
 
 wss.on("connection", (ws) => {
-  log("client connected");
   clients.set(ws, {});
-
   send(ws, { type: "CONNECTED" });
 
   ws.on("message", (msg) => {
     try {
       const data = JSON.parse(msg.toString());
-      log("message received:", data);
 
       if (data.type === "CREATE_BATTLE") {
         createRoom(ws);
@@ -636,7 +632,6 @@ wss.on("connection", (ws) => {
   });
 
   ws.on("close", () => {
-    log("client disconnected");
     cleanupClient(ws);
   });
 
