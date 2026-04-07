@@ -251,6 +251,7 @@ function finishSession(room) {
     score: room.score,
     shots: room.shots,
     history: room.history,
+    penaltyRecap: room.penaltyRecap,
     finalVideo
   });
 }
@@ -459,6 +460,20 @@ function computeRoundResult(room) {
     success: goalScored
   });
 
+  if (!room.penaltyRecap) {
+    room.penaltyRecap = [];
+  }
+
+  room.penaltyRecap.push({
+    penaltyNumber: room.penaltyRecap.length + 1,
+    shooterId: shooter,
+    shooterTeam: getShooterTeam(room, shooter),
+    playerATime: A.time,
+    playerBTime: B.time,
+    roundWinner: roundWinner || "DRAW",
+    goalScored
+  });
+
   if (room.isSuddenDeath) {
     room.suddenDeathPairShots[shooter] += 1;
     if (goalScored) {
@@ -511,6 +526,7 @@ function createRoom(ws, selectedTeam) {
     score: { A: 0, B: 0 },
     shots: { A: 0, B: 0 },
     history: [],
+    penaltyRecap: [],
     isSuddenDeath: false,
     suddenDeathPairShots: { A: 0, B: 0 },
     suddenDeathPairGoals: { A: 0, B: 0 }
