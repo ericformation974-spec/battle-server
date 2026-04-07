@@ -454,7 +454,8 @@ function computeRoundResult(room) {
   }
 
   room.history.push({
-    team: shooter,
+    shooterId: shooter,
+    shooterTeam: getShooterTeam(room, shooter),
     success: goalScored
   });
 
