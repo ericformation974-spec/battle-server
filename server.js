@@ -81,6 +81,30 @@ function cloneQuestions() {
   return JSON.parse(JSON.stringify(masterQuestions));
 }
 
+function shuffleArray(input) {
+  const arr = [...input];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function shuffleQuestionAnswers(question) {
+  const indexedAnswers = question.answers.map((answer, index) => ({
+    answer,
+    wasCorrect: index === question.correctAnswer
+  }));
+
+  const shuffled = shuffleArray(indexedAnswers);
+
+  return {
+    questionText: question.questionText,
+    answers: shuffled.map((item) => item.answer),
+    correctAnswer: shuffled.findIndex((item) => item.wasCorrect)
+  };
+}
+
 function send(ws, data) {
   try {
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -277,9 +301,24 @@ function resolveRoundTimeout(room) {
 }
 
 function getNextQuestion(room) {
-  const questionIndex = room.questionCursor % room.questions.length;
-  room.questionCursor += 1;
-  return room.questions[questionIndex];
+  if (!room.questions || room.questions.length === 0) {
+    throw new Error("Aucune question disponible");
+  }
+
+  if (!room.questionOrder || room.questionOrder.length === 0) {
+    room.questionOrder = shuffleArray([...Array(room.questions.length).keys()]);
+    room.questionOrderCursor = 0;
+  }
+
+  if (room.questionOrderCursor >= room.questionOrder.length) {
+    room.questionOrder = shuffleArray([...Array(room.questions.length).keys()]);
+    room.questionOrderCursor = 0;
+  }
+
+  const questionIndex = room.questionOrder[room.questionOrderCursor];
+  room.questionOrderCursor += 1;
+
+  return shuffleQuestionAnswers(room.questions[questionIndex]);
 }
 
 function startQuestion(room) {
@@ -516,6 +555,8 @@ function createRoom(ws, selectedTeam) {
     },
     questions: cloneQuestions(),
     questionCursor: 0,
+    questionOrder: [],
+    questionOrderCursor: 0,
     shotIndex: 0,
     currentShooter: "A",
     answers: { A: null, B: null },
