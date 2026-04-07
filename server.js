@@ -268,11 +268,13 @@ function logPenaltyRecap(room) {
     const timeA = (p.playerATime / 1000).toFixed(2);
     const timeB = (p.playerBTime / 1000).toFixed(2);
 
+    const Astatus = p.playerAIsCorrect ? "✅" : "❌";
+    const Bstatus = p.playerBIsCorrect ? "✅" : "❌";
+
     log(
-      `${emojiResult} #${p.penaltyNumber} | ${p.shooterTeam} (${p.shooterId}) | ` +
-      `A: ${timeA}s | B: ${timeB}s | ` +
-      `Winner: ${emojiWinner} ${p.roundWinner} | ` +
-      `${p.goalScored ? "GOAL" : "MISS"}`
+      `${emojiResult} #${p.penaltyNumber} | ${p.shooterTeam} (${p.shooterId})\n` +
+      `   A: ${timeA}s ${Astatus} | B: ${timeB}s ${Bstatus}\n` +
+      `   Winner: ${emojiWinner} ${p.roundWinner} | ${p.goalScored ? "GOAL" : "MISS"}`
     );
   });
 
@@ -546,6 +548,8 @@ function computeRoundResult(room) {
     shooterTeam: getShooterTeam(room, shooter),
     playerATime: A.time,
     playerBTime: B.time,
+    playerAIsCorrect: Aok,
+    playerBIsCorrect: Bok,
     roundWinner: roundWinner || "DRAW",
     goalScored
   });
