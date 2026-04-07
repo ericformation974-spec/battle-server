@@ -182,11 +182,11 @@ function getPenaltyDisplayText(room, shooterId, goalScored) {
   return goalScored ? "BUT BRESIL" : "BRESIL RATE";
 }
 
-function getFinalVideo(finalWinner) {
-  if (finalWinner === "A") {
+function getFinalVideoByTeam(team) {
+  if (team === "France") {
     return getRandomVideoPath(VIDEO_PATHS.FINAL_F_WIN, 5);
   }
-  if (finalWinner === "B") {
+  if (team === "Brazil") {
     return getRandomVideoPath(VIDEO_PATHS.FINAL_B_WIN, 5);
   }
   return getRandomVideoPath(VIDEO_PATHS.FINAL_DRAW, 3);
@@ -227,20 +227,26 @@ function finishSession(room) {
 
   let finalWinner = "draw";
   let finalText = "SEANCE TERMINEE - EGALITE";
+  let winnerTeam = null;
 
   if (room.score.A > room.score.B) {
     finalWinner = "A";
-    finalText = `${room.players.A.team.toUpperCase()} GAGNE LA SEANCE`;
+    winnerTeam = room.players.A.team;
+    finalText = `${winnerTeam.toUpperCase()} GAGNE LA SEANCE`;
   } else if (room.score.B > room.score.A) {
     finalWinner = "B";
-    finalText = `${room.players.B.team.toUpperCase()} GAGNE LA SEANCE`;
+    winnerTeam = room.players.B.team;
+    finalText = `${winnerTeam.toUpperCase()} GAGNE LA SEANCE`;
   }
 
-  const finalVideo = getFinalVideo(finalWinner);
+  const finalVideo = winnerTeam
+    ? getFinalVideoByTeam(winnerTeam)
+    : getRandomVideoPath(VIDEO_PATHS.FINAL_DRAW, 3);
 
   broadcast(room, {
     type: "QUIZ_FINISHED",
     winner: finalWinner,
+    winnerTeam,
     displayText: finalText,
     score: room.score,
     shots: room.shots,
