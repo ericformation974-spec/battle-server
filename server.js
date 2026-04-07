@@ -15,7 +15,6 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.PORT || 3000;
-
 const ANSWER_TIME_LIMIT_MS = 5000;
 const PENALTY_RESULT_VIDEO_MS = 8000;
 const QUESTION_AFTER_IDLE_DELAY_MS = 80;
@@ -26,6 +25,18 @@ const REGULAR_TOTAL_SHOTS = REGULAR_SHOTS_PER_TEAM * 2;
 const rooms = new Map();
 const clients = new Map();
 
+const VIDEO_PATHS = {
+  F_YES: "VIDEO/F_yes",
+  F_NO: "VIDEO/F_no",
+  B_YES: "VIDEO/B_yes",
+  B_NO: "VIDEO/B_no",
+  F_IDLE: "VIDEO/F_idle",
+  B_IDLE: "VIDEO/B_idle",
+  FINAL_F_WIN: "VIDEO/FINAL/F_win",
+  FINAL_B_WIN: "VIDEO/FINAL/B_win",
+  FINAL_DRAW: "VIDEO/FINAL/draw"
+};
+
 function log(...args) {
   console.log(new Date().toISOString(), ...args);
 }
@@ -34,9 +45,34 @@ function getOppositeTeam(team) {
   return team === "Brazil" ? "France" : "Brazil";
 }
 
+function getRandomVideoPath(folder, max) {
+  const n = Math.floor(Math.random() * max) + 1;
+  return `${folder}/${n}.mp4`;
+}
+
 function loadQuestions() {
-  const raw = fs.readFileSync(path.join(__dirname, "questions.json"), "utf8");
-  return JSON.parse(raw).questions;
+  const filePath = path.join(__dirname, "questions.json");
+  const raw = fs.readFileSync(filePath, "utf8");
+  const parsed = JSON.parse(raw);
+
+  if (!parsed.questions || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+    throw new Error("questions.json invalide ou vide");
+  }
+
+  for (const q of parsed.questions) {
+    if (
+      typeof q.questionText !== "string" ||
+      !Array.isArray(q.answers) ||
+      q.answers.length !== 4 ||
+      !Number.isInteger(q.correctAnswer) ||
+      q.correctAnswer < 0 ||
+      q.correctAnswer > 3
+    ) {
+      throw new Error("Question invalide dans questions.json");
+    }
+  }
+
+  return parsed.questions;
 }
 
 const masterQuestions = loadQuestions();
@@ -46,24 +82,420 @@ function cloneQuestions() {
 }
 
 function send(ws, data) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(data));
+  try {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(data));
+    }
+  } catch (err) {
+    log("send error:", err);
   }
 }
 
 function broadcast(room, data) {
-  ["A", "B"].forEach(id => {
-    if (room.players[id]) send(room.players[id].ws, data);
+  ["A", "B"].forEach((id) => {
+    const player = room.players[id];
+    if (!player) return;
+    send(player.ws, data);
   });
 }
 
-function createRoom(ws, team) {
-  const code = Math.random().toString(36).substring(2, 6).toUpperCase();
+function generateRoomCode(length = 4) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < length; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+function createUniqueRoomCode() {
+  let code;
+  do {
+    code = generateRoomCode(4);
+  } while (rooms.has(code));
+  return code;
+}
+
+function sanitizeRoomCode(value) {
+  return String(value || "").trim().toUpperCase();
+}
+
+function clearQuestionTimeout(room) {
+  if (room.questionTimeout) {
+    clearTimeout(room.questionTimeout);
+    room.questionTimeout = null;
+  }
+}
+
+function clearTransitionTimeout(room) {
+  if (room.transitionTimeout) {
+    clearTimeout(room.transitionTimeout);
+    room.transitionTimeout = null;
+  }
+}
+
+function clearQuestionDisplayTimeout(room) {
+  if (room.questionDisplayTimeout) {
+    clearTimeout(room.questionDisplayTimeout);
+    room.questionDisplayTimeout = null;
+  }
+}
+
+function getShooterByShotIndex(shotIndex) {
+  return shotIndex % 2 === 0 ? "A" : "B";
+}
+
+function getShooterTeam(room, shooterId) {
+  return room.players[shooterId]?.team || "France";
+}
+
+function getIdleVideoForShooter(room, shooterId) {
+  const shooterTeam = getShooterTeam(room, shooterId);
+
+  if (shooterTeam === "France") {
+    return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 5);
+  }
+  return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 5);
+}
+
+function getPenaltyVideoForShooter(room, shooterId, goalScored) {
+  const shooterTeam = getShooterTeam(room, shooterId);
+
+  if (shooterTeam === "France") {
+    return goalScored
+      ? getRandomVideoPath(VIDEO_PATHS.F_YES, 10)
+      : getRandomVideoPath(VIDEO_PATHS.F_NO, 10);
+  }
+
+  return goalScored
+    ? getRandomVideoPath(VIDEO_PATHS.B_YES, 10)
+    : getRandomVideoPath(VIDEO_PATHS.B_NO, 10);
+}
+
+function getPenaltyDisplayText(room, shooterId, goalScored) {
+  const shooterTeam = getShooterTeam(room, shooterId);
+
+  if (shooterTeam === "France") {
+    return goalScored ? "BUT FRANCE" : "FRANCE RATE";
+  }
+
+  return goalScored ? "BUT BRESIL" : "BRESIL RATE";
+}
+
+function getFinalVideoByTeam(team) {
+  if (team === "France") {
+    return getRandomVideoPath(VIDEO_PATHS.FINAL_F_WIN, 5);
+  }
+  if (team === "Brazil") {
+    return getRandomVideoPath(VIDEO_PATHS.FINAL_B_WIN, 5);
+  }
+  return getRandomVideoPath(VIDEO_PATHS.FINAL_DRAW, 3);
+}
+
+function canEndEarlyDuringRegular(room) {
+  if (room.isSuddenDeath) return false;
+
+  const remainingA = REGULAR_SHOTS_PER_TEAM - room.shots.A;
+  const remainingB = REGULAR_SHOTS_PER_TEAM - room.shots.B;
+
+  if (room.score.A > room.score.B + remainingB) return true;
+  if (room.score.B > room.score.A + remainingA) return true;
+
+  return false;
+}
+
+function resetSuddenDeathPair(room) {
+  room.suddenDeathPairShots = { A: 0, B: 0 };
+  room.suddenDeathPairGoals = { A: 0, B: 0 };
+}
+
+function getSuddenDeathWinner(room) {
+  if (!room.isSuddenDeath) return null;
+
+  if (room.suddenDeathPairShots.A === 1 && room.suddenDeathPairShots.B === 1) {
+    if (room.suddenDeathPairGoals.A > room.suddenDeathPairGoals.B) return "A";
+    if (room.suddenDeathPairGoals.B > room.suddenDeathPairGoals.A) return "B";
+  }
+
+  return null;
+}
+
+function finishSession(room) {
+  clearQuestionTimeout(room);
+  clearTransitionTimeout(room);
+  clearQuestionDisplayTimeout(room);
+
+  let finalWinner = "draw";
+  let finalText = "SEANCE TERMINEE - EGALITE";
+  let winnerTeam = null;
+
+  if (room.score.A > room.score.B) {
+    finalWinner = "A";
+    winnerTeam = room.players.A.team;
+    finalText = `${winnerTeam.toUpperCase()} GAGNE LA SEANCE`;
+  } else if (room.score.B > room.score.A) {
+    finalWinner = "B";
+    winnerTeam = room.players.B.team;
+    finalText = `${winnerTeam.toUpperCase()} GAGNE LA SEANCE`;
+  }
+
+  const finalVideo = winnerTeam
+    ? getFinalVideoByTeam(winnerTeam)
+    : getRandomVideoPath(VIDEO_PATHS.FINAL_DRAW, 3);
+
+  broadcast(room, {
+    type: "QUIZ_FINISHED",
+    winner: finalWinner,
+    winnerTeam,
+    displayText: finalText,
+    score: room.score,
+    shots: room.shots,
+    history: room.history,
+    finalVideo
+  });
+}
+
+function resolveRoundTimeout(room) {
+  if (!room || room.roundResolved) return;
+
+  if (room.answers.A === null) {
+    room.answers.A = {
+      answer: -1,
+      time: ANSWER_TIME_LIMIT_MS
+    };
+  }
+
+  if (room.answers.B === null) {
+    room.answers.B = {
+      answer: -1,
+      time: ANSWER_TIME_LIMIT_MS
+    };
+  }
+
+  computeRoundResult(room);
+}
+
+function getNextQuestion(room) {
+  const questionIndex = room.questionCursor % room.questions.length;
+  room.questionCursor += 1;
+  return room.questions[questionIndex];
+}
+
+function startQuestion(room) {
+  clearQuestionTimeout(room);
+  clearTransitionTimeout(room);
+  clearQuestionDisplayTimeout(room);
+
+  const q = getNextQuestion(room);
+  if (!q) {
+    throw new Error("Question introuvable");
+  }
+
+  room.currentShooter = getShooterByShotIndex(room.shotIndex);
+  room.correct = q.correctAnswer;
+  room.answers = { A: null, B: null };
+  room.roundResolved = false;
+
+  const idleVideo = getIdleVideoForShooter(room, room.currentShooter);
+
+  broadcast(room, {
+    type: "IDLE_VIDEO",
+    currentVideo: idleVideo,
+    preloadVideo: idleVideo,
+    shooter: room.currentShooter,
+    shooterTeam: getShooterTeam(room, room.currentShooter),
+    score: room.score,
+    shots: room.shots,
+    history: room.history,
+    isSuddenDeath: room.isSuddenDeath
+  });
+
+  room.questionDisplayTimeout = setTimeout(() => {
+    try {
+      broadcast(room, {
+        type: "QUESTION_STARTED",
+        questionText: q.questionText,
+        answers: q.answers,
+        timeLimitMs: ANSWER_TIME_LIMIT_MS,
+        shooter: room.currentShooter,
+        shooterTeam: getShooterTeam(room, room.currentShooter),
+        score: room.score,
+        shots: room.shots,
+        history: room.history,
+        isSuddenDeath: room.isSuddenDeath
+      });
+
+      room.questionTimeout = setTimeout(() => {
+        try {
+          resolveRoundTimeout(room);
+        } catch (err) {
+          log("resolveRoundTimeout crash:", err);
+        }
+      }, ANSWER_TIME_LIMIT_MS);
+    } catch (err) {
+      log("QUESTION_STARTED crash:", err);
+    }
+  }, QUESTION_AFTER_IDLE_DELAY_MS);
+}
+
+function scheduleNextQuestionAfterPenalty(room) {
+  clearTransitionTimeout(room);
+
+  room.transitionTimeout = setTimeout(() => {
+    try {
+      if (canEndEarlyDuringRegular(room)) {
+        finishSession(room);
+        return;
+      }
+
+      const suddenDeathWinner = getSuddenDeathWinner(room);
+      if (suddenDeathWinner) {
+        finishSession(room);
+        return;
+      }
+
+      if (!room.isSuddenDeath && room.shotIndex >= REGULAR_TOTAL_SHOTS) {
+        if (room.score.A === room.score.B) {
+          room.isSuddenDeath = true;
+          resetSuddenDeathPair(room);
+        } else {
+          finishSession(room);
+          return;
+        }
+      }
+
+      if (
+        room.isSuddenDeath &&
+        room.suddenDeathPairShots.A === 1 &&
+        room.suddenDeathPairShots.B === 1 &&
+        room.suddenDeathPairGoals.A === room.suddenDeathPairGoals.B
+      ) {
+        resetSuddenDeathPair(room);
+      }
+
+      startQuestion(room);
+    } catch (err) {
+      log("scheduleNextQuestionAfterPenalty crash:", err);
+    }
+  }, PENALTY_RESULT_VIDEO_MS);
+}
+
+function scheduleSameShooterNewQuestion(room) {
+  clearTransitionTimeout(room);
+
+  room.transitionTimeout = setTimeout(() => {
+    try {
+      startQuestion(room);
+    } catch (err) {
+      log("scheduleSameShooterNewQuestion crash:", err);
+    }
+  }, 0);
+}
+
+function computeRoundResult(room) {
+  if (room.roundResolved) return;
+
+  room.roundResolved = true;
+  clearQuestionTimeout(room);
+  clearQuestionDisplayTimeout(room);
+
+  const A = room.answers.A;
+  const B = room.answers.B;
+
+  if (!A || !B) {
+    throw new Error("computeRoundResult appelé sans deux réponses");
+  }
+
+  const correct = room.correct;
+  const Aok = A.answer === correct;
+  const Bok = B.answer === correct;
+
+  let roundWinner = null;
+
+  if (Aok && !Bok) {
+    roundWinner = "A";
+  } else if (Bok && !Aok) {
+    roundWinner = "B";
+  } else if (Aok && Bok) {
+    if (A.time < B.time) roundWinner = "A";
+    else if (B.time < A.time) roundWinner = "B";
+    else roundWinner = null;
+  } else {
+    roundWinner = null;
+  }
+
+  const shooter = room.currentShooter;
+
+  if (roundWinner === null) {
+    broadcast(room, {
+      type: "NO_WINNER",
+      displayText: "AUCUN GAGNANT - NOUVELLE QUESTION",
+      shooter,
+      shooterTeam: getShooterTeam(room, shooter),
+      score: room.score,
+      shots: room.shots,
+      history: room.history,
+      isSuddenDeath: room.isSuddenDeath
+    });
+
+    scheduleSameShooterNewQuestion(room);
+    return;
+  }
+
+  room.shots[shooter] += 1;
+
+  const goalScored = roundWinner === shooter;
+  if (goalScored) {
+    room.score[shooter] += 1;
+  }
+
+  if (!room.history) {
+    room.history = [];
+  }
+
+  room.history.push({
+    shooterId: shooter,
+    shooterTeam: getShooterTeam(room, shooter),
+    success: goalScored
+  });
+
+  if (room.isSuddenDeath) {
+    room.suddenDeathPairShots[shooter] += 1;
+    if (goalScored) {
+      room.suddenDeathPairGoals[shooter] += 1;
+    }
+  }
+
+  const currentVideo = getPenaltyVideoForShooter(room, shooter, goalScored);
+  const text = getPenaltyDisplayText(room, shooter, goalScored);
+
+  broadcast(room, {
+    type: "ROUND_RESULT",
+    displayText: text,
+    shooter,
+    shooterTeam: getShooterTeam(room, shooter),
+    roundWinner,
+    goalScored,
+    currentVideo,
+    preloadVideo: "",
+    score: room.score,
+    shots: room.shots,
+    history: room.history,
+    isSuddenDeath: room.isSuddenDeath
+  });
+
+  room.shotIndex += 1;
+  scheduleNextQuestionAfterPenalty(room);
+}
+
+function createRoom(ws, selectedTeam) {
+  const code = createUniqueRoomCode();
+  const safeTeam = selectedTeam === "Brazil" ? "Brazil" : "France";
 
   const room = {
     code,
     players: {
-      A: { ws, team },
+      A: { ws, team: safeTeam },
       B: null
     },
     questions: cloneQuestions(),
@@ -72,12 +504,16 @@ function createRoom(ws, team) {
     currentShooter: "A",
     answers: { A: null, B: null },
     correct: 0,
+    questionTimeout: null,
+    transitionTimeout: null,
+    questionDisplayTimeout: null,
     roundResolved: false,
     score: { A: 0, B: 0 },
     shots: { A: 0, B: 0 },
     history: [],
-    penaltyRecap: [],
-    isSuddenDeath: false
+    isSuddenDeath: false,
+    suddenDeathPairShots: { A: 0, B: 0 },
+    suddenDeathPairGoals: { A: 0, B: 0 }
   };
 
   rooms.set(code, room);
@@ -87,193 +523,214 @@ function createRoom(ws, team) {
     type: "ROOM_CREATED",
     roomCode: code,
     playerId: "A",
-    team
+    team: safeTeam
   });
 }
 
-function getShooterTeam(room, shooterId) {
-  return room.players[shooterId]?.team;
-}
+function cleanupClient(ws) {
+  const info = clients.get(ws);
 
-function getShooterByShotIndex(i) {
-  return i % 2 === 0 ? "A" : "B";
-}
+  if (info && info.room) {
+    const room = rooms.get(info.room);
 
-function startQuestion(room) {
-  const q = room.questions[room.questionCursor % room.questions.length];
-  room.questionCursor++;
+    if (room) {
+      if (info.id === "A" && room.players.A && room.players.A.ws === ws) {
+        room.players.A = null;
+      }
 
-  room.currentShooter = getShooterByShotIndex(room.shotIndex);
-  room.correct = q.correctAnswer;
-  room.answers = { A: null, B: null };
-  room.roundResolved = false;
+      if (info.id === "B" && room.players.B && room.players.B.ws === ws) {
+        room.players.B = null;
+      }
 
-  broadcast(room, {
-    type: "QUESTION_STARTED",
-    questionText: q.questionText,
-    answers: q.answers,
-    timeLimitMs: ANSWER_TIME_LIMIT_MS,
-    shooter: room.currentShooter,
-    shooterTeam: getShooterTeam(room, room.currentShooter)
-  });
-
-  setTimeout(() => resolveRoundTimeout(room), ANSWER_TIME_LIMIT_MS);
-}
-
-function resolveRoundTimeout(room) {
-  if (room.roundResolved) return;
-
-  if (!room.answers.A) room.answers.A = { answer: -1, time: ANSWER_TIME_LIMIT_MS };
-  if (!room.answers.B) room.answers.B = { answer: -1, time: ANSWER_TIME_LIMIT_MS };
-
-  computeRoundResult(room);
-}
-
-function computeRoundResult(room) {
-  if (room.roundResolved) return;
-
-  room.roundResolved = true;
-
-  const A = room.answers.A;
-  const B = room.answers.B;
-
-  const correct = room.correct;
-
-  const Aok = A.answer === correct;
-  const Bok = B.answer === correct;
-
-  let roundWinner = null;
-
-  if (Aok && !Bok) roundWinner = "A";
-  else if (Bok && !Aok) roundWinner = "B";
-  else if (Aok && Bok) {
-    if (A.time < B.time) roundWinner = "A";
-    else if (B.time < A.time) roundWinner = "B";
-  }
-
-  const shooter = room.currentShooter;
-
-  if (roundWinner === null) {
-    startQuestion(room);
-    return;
-  }
-
-  room.shots[shooter]++;
-
-  const goalScored = roundWinner === shooter;
-  if (goalScored) room.score[shooter]++;
-
-  // 🔥 HISTORY SIMPLE
-  room.history.push({
-    shooterId: shooter,
-    shooterTeam: getShooterTeam(room, shooter),
-    success: goalScored
-  });
-
-  // 🔥 RECAP DETAILLE
-  room.penaltyRecap.push({
-    penaltyNumber: room.penaltyRecap.length + 1,
-    shooterId: shooter,
-    shooterTeam: getShooterTeam(room, shooter),
-    playerATime: A.time,
-    playerBTime: B.time,
-    roundWinner: roundWinner || "DRAW",
-    goalScored
-  });
-
-  broadcast(room, {
-    type: "ROUND_RESULT",
-    displayText: goalScored ? "BUT" : "RATE",
-    shooter,
-    shooterTeam: getShooterTeam(room, shooter),
-    roundWinner,
-    goalScored,
-    score: room.score,
-    shots: room.shots,
-    history: room.history
-  });
-
-  room.shotIndex++;
-
-  setTimeout(() => {
-    if (room.shotIndex >= REGULAR_TOTAL_SHOTS) {
-      finishSession(room);
-    } else {
-      startQuestion(room);
+      if (!room.players.A && !room.players.B) {
+        clearQuestionTimeout(room);
+        clearTransitionTimeout(room);
+        clearQuestionDisplayTimeout(room);
+        rooms.delete(room.code);
+      }
     }
-  }, PENALTY_RESULT_VIDEO_MS);
-}
-
-function finishSession(room) {
-  let winner = "draw";
-  let winnerTeam = null;
-
-  if (room.score.A > room.score.B) {
-    winner = "A";
-    winnerTeam = room.players.A.team;
-  } else if (room.score.B > room.score.A) {
-    winner = "B";
-    winnerTeam = room.players.B.team;
   }
 
-  broadcast(room, {
-    type: "QUIZ_FINISHED",
-    winner,
-    winnerTeam,
-    score: room.score,
-    shots: room.shots,
-    history: room.history,
-    penaltyRecap: room.penaltyRecap
-  });
+  clients.delete(ws);
 }
 
-wss.on("connection", ws => {
+wss.on("connection", (ws) => {
   clients.set(ws, {});
   send(ws, { type: "CONNECTED" });
 
-  ws.on("message", msg => {
-    const data = JSON.parse(msg);
+  ws.on("message", (msg) => {
+    try {
+      const data = JSON.parse(msg.toString());
 
-    if (data.type === "CREATE_BATTLE") {
-      createRoom(ws, data.team);
-      return;
-    }
-
-    if (data.type === "JOIN_BATTLE") {
-      const room = rooms.get(data.roomCode);
-      room.players.B = { ws, team: getOppositeTeam(room.players.A.team) };
-      clients.set(ws, { room: data.roomCode, id: "B" });
-
-      send(ws, {
-        type: "ROOM_JOINED",
-        roomCode: data.roomCode,
-        playerId: "B",
-        team: room.players.B.team
-      });
-
-      broadcast(room, {
-        type: "BATTLE_READY",
-        yourTeam: room.players.A.team,
-        opponentTeam: room.players.B.team
-      });
-
-      setTimeout(() => startQuestion(room), 1000);
-      return;
-    }
-
-    if (data.type === "ANSWER") {
-      const info = clients.get(ws);
-      const room = rooms.get(info.room);
-
-      room.answers[info.id] = {
-        answer: data.answer,
-        time: data.time
-      };
-
-      if (room.answers.A && room.answers.B) {
-        computeRoundResult(room);
+      if (data.type === "CREATE_BATTLE") {
+        const team = data.team === "Brazil" ? "Brazil" : "France";
+        createRoom(ws, team);
+        return;
       }
+
+      if (data.type === "CREATE_SOLO_BATTLE") {
+        const team = data.team === "Brazil" ? "Brazil" : "France";
+        createRoom(ws, team);
+
+        const info = clients.get(ws);
+        const room = info && info.room ? rooms.get(info.room) : null;
+
+        if (!room) {
+          send(ws, { type: "ERROR", message: "Impossible de créer la room solo" });
+          return;
+        }
+
+        room.players.B = {
+          ws,
+          team: getOppositeTeam(room.players.A.team)
+        };
+
+        send(ws, {
+          type: "SOLO_TEAMS_ASSIGNED",
+          yourTeam: room.players.A.team,
+          opponentTeam: room.players.B.team
+        });
+
+        send(room.players.A.ws, {
+          type: "BATTLE_READY",
+          yourTeam: room.players.A.team,
+          opponentTeam: room.players.B.team
+        });
+
+        setTimeout(() => {
+          try {
+            startQuestion(room);
+          } catch (err) {
+            log("startQuestion solo crash:", err);
+          }
+        }, 1000);
+
+        return;
+      }
+
+      if (data.type === "JOIN_BATTLE") {
+        const code = sanitizeRoomCode(data.roomCode);
+        const room = rooms.get(code);
+
+        if (!room) {
+          send(ws, { type: "ERROR", message: "Room introuvable" });
+          return;
+        }
+
+        if (room.players.B) {
+          send(ws, { type: "ERROR", message: "Room complète" });
+          return;
+        }
+
+        const teamForB = getOppositeTeam(room.players.A.team);
+
+        room.players.B = { ws, team: teamForB };
+        clients.set(ws, { room: code, id: "B" });
+
+        send(ws, {
+          type: "ROOM_JOINED",
+          roomCode: code,
+          playerId: "B",
+          team: teamForB
+        });
+
+        send(room.players.A.ws, {
+          type: "OPPONENT_JOINED",
+          opponentTeam: teamForB
+        });
+
+        send(room.players.A.ws, {
+          type: "BATTLE_READY",
+          yourTeam: room.players.A.team,
+          opponentTeam: room.players.B.team
+        });
+
+        send(room.players.B.ws, {
+          type: "BATTLE_READY",
+          yourTeam: room.players.B.team,
+          opponentTeam: room.players.A.team
+        });
+
+        setTimeout(() => {
+          try {
+            startQuestion(room);
+          } catch (err) {
+            log("startQuestion duo crash:", err);
+          }
+        }, 1000);
+
+        return;
+      }
+
+      if (data.type === "ANSWER") {
+        const info = clients.get(ws);
+
+        if (!info || !info.room || !info.id) {
+          send(ws, { type: "ERROR", message: "Client non associé à une room" });
+          return;
+        }
+
+        const room = rooms.get(info.room);
+
+        if (!room) {
+          send(ws, { type: "ERROR", message: "Room introuvable" });
+          return;
+        }
+
+        if (room.roundResolved) {
+          log("ANSWER ignorée: round déjà terminé", {
+            room: room.code,
+            playerId: info.id
+          });
+          return;
+        }
+
+        if (!Number.isInteger(data.answer) || data.answer < 0 || data.answer > 3) {
+          send(ws, { type: "ERROR", message: "Réponse invalide" });
+          return;
+        }
+
+        const time = Number(data.time);
+        if (!Number.isFinite(time) || time < 0 || time > ANSWER_TIME_LIMIT_MS) {
+          send(ws, { type: "ERROR", message: "Temps invalide" });
+          return;
+        }
+
+        if (room.answers[info.id] !== null) {
+          return;
+        }
+
+        room.answers[info.id] = {
+          answer: data.answer,
+          time
+        };
+
+        broadcast(room, {
+          type: "ANSWER_RECEIVED",
+          roomCode: room.code,
+          playerId: info.id
+        });
+
+        if (room.answers.A && room.answers.B) {
+          computeRoundResult(room);
+        }
+
+        return;
+      }
+
+      send(ws, { type: "ERROR", message: "Unknown message type" });
+    } catch (err) {
+      log("message handler crash:", err);
+      send(ws, { type: "ERROR", message: "Server crash in message handler" });
     }
+  });
+
+  ws.on("close", () => {
+    cleanupClient(ws);
+  });
+
+  ws.on("error", (err) => {
+    log("ws error:", err);
   });
 });
 
