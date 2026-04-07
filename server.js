@@ -244,6 +244,41 @@ function getSuddenDeathWinner(room) {
   return null;
 }
 
+function logPenaltyRecap(room) {
+  if (!room.penaltyRecap || room.penaltyRecap.length === 0) {
+    log("⚠️ Aucun recap de penalties.");
+    return;
+  }
+
+  const scoreA = room.score?.A ?? 0;
+  const scoreB = room.score?.B ?? 0;
+  const teamA = room.players?.A?.team ?? "A";
+  const teamB = room.players?.B?.team ?? "B";
+
+  log("🏟️ ===== RECAP MATCH =====");
+  log(`📊 Score final: ${teamA} ${scoreA} - ${scoreB} ${teamB}`);
+
+  room.penaltyRecap.forEach((p) => {
+    const emojiResult = p.goalScored ? "⚽" : "❌";
+    const emojiWinner =
+      p.roundWinner === "A" ? "🟦" :
+      p.roundWinner === "B" ? "🟨" :
+      "🤝";
+
+    const timeA = (p.playerATime / 1000).toFixed(2);
+    const timeB = (p.playerBTime / 1000).toFixed(2);
+
+    log(
+      `${emojiResult} #${p.penaltyNumber} | ${p.shooterTeam} (${p.shooterId}) | ` +
+      `A: ${timeA}s | B: ${timeB}s | ` +
+      `Winner: ${emojiWinner} ${p.roundWinner} | ` +
+      `${p.goalScored ? "GOAL" : "MISS"}`
+    );
+  });
+
+  log("🏁 =======================");
+}
+
 function finishSession(room) {
   clearQuestionTimeout(room);
   clearTransitionTimeout(room);
@@ -262,6 +297,8 @@ function finishSession(room) {
     winnerTeam = room.players.B.team;
     finalText = `${winnerTeam.toUpperCase()} GAGNE LA SEANCE`;
   }
+
+  logPenaltyRecap(room);
 
   const finalVideo = winnerTeam
     ? getFinalVideoByTeam(winnerTeam)
