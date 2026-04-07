@@ -496,6 +496,7 @@ function computeRoundResult(room) {
     score: room.score,
     shots: room.shots,
     history: room.history,
+    penaltyRecap: room.penaltyRecap,
     isSuddenDeath: room.isSuddenDeath
   });
 
