@@ -37,7 +37,7 @@ const VIDEO_PATHS = {
   FINAL_DRAW: "VIDEO/FINAL/draw"
 };
 
-const SOLO_BOT_PROFILES = {
+const BOT_PROFILES = {
   easy: {
     correctChance: 0.45,
     minTimeMs: 2600,
@@ -72,17 +72,56 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function getSoloProfile(difficulty) {
-  return SOLO_BOT_PROFILES[difficulty] || SOLO_BOT_PROFILES.medium;
+function safeSchoolLevel(value) {
+  return ["primary", "middle_school", "high_school"].includes(value)
+    ? value
+    : "middle_school";
 }
 
-function loadQuestions() {
-  const filePath = path.join(__dirname, "questions.json");
+function safeQuestionDifficulty(value) {
+  return ["easy", "medium", "expert"].includes(value)
+    ? value
+    : "medium";
+}
+
+function safeBotDifficulty(value) {
+  return ["easy", "medium", "expert"].includes(value)
+    ? value
+    : "medium";
+}
+
+function safeSubject(value) {
+  return ["math", "french", "science", "history"].includes(value)
+    ? value
+    : "math";
+}
+
+function getBotProfile(botDifficulty) {
+  return BOT_PROFILES[safeBotDifficulty(botDifficulty)];
+}
+
+function loadQuestionsByPath(schoolLevel, questionDifficulty, subject) {
+  const level = safeSchoolLevel(schoolLevel);
+  const difficulty = safeQuestionDifficulty(questionDifficulty);
+  const safeSubj = safeSubject(subject);
+
+  const filePath = path.join(
+    __dirname,
+    "questions",
+    level,
+    difficulty,
+    `${safeSubj}.json`
+  );
+
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Fichier de questions introuvable: ${filePath}`);
+  }
+
   const raw = fs.readFileSync(filePath, "utf8");
   const parsed = JSON.parse(raw);
 
   if (!parsed.questions || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
-    throw new Error("questions.json invalide ou vide");
+    throw new Error(`questions invalide ou vide: ${filePath}`);
   }
 
   for (const q of parsed.questions) {
@@ -94,17 +133,15 @@ function loadQuestions() {
       q.correctAnswer < 0 ||
       q.correctAnswer > 3
     ) {
-      throw new Error("Question invalide dans questions.json");
+      throw new Error(`Question invalide dans ${filePath}`);
     }
   }
 
   return parsed.questions;
 }
 
-const masterQuestions = loadQuestions();
-
-function cloneQuestions() {
-  return JSON.parse(JSON.stringify(masterQuestions));
+function cloneQuestions(questions) {
+  return JSON.parse(JSON.stringify(questions));
 }
 
 function shuffleArray(input) {
@@ -406,7 +443,7 @@ function scheduleSoloBotAnswer(room) {
   clearBotAnswerTimeout(room);
 
   const botId = room.botPlayerId || "B";
-  const profile = getSoloProfile(room.botDifficulty);
+  const profile = getBotProfile(room.botDifficulty);
 
   const willBeCorrect = Math.random() < profile.correctChance;
   const responseTime = randomInt(profile.minTimeMs, profile.maxTimeMs);
@@ -431,9 +468,7 @@ function scheduleSoloBotAnswer(room) {
         playerId: botId
       });
 
-      log(
-        `BOT ANSWER [${room.botDifficulty}] -> ${botId} | answer=${botAnswer} | time=${responseTime}`
-      );
+      log(`BOT ANSWER [${room.botDifficulty}] -> ${botId} | answer=${botAnswer} | time=${responseTime}`);
 
       if (room.answers.A && room.answers.B) {
         computeRoundResult(room);
@@ -618,19 +653,11 @@ function computeRoundResult(room) {
     room.score[shooter] += 1;
   }
 
-  if (!room.history) {
-    room.history = [];
-  }
-
   room.history.push({
     shooterId: shooter,
     shooterTeam: getShooterTeam(room, shooter),
     success: goalScored
   });
-
-  if (!room.penaltyRecap) {
-    room.penaltyRecap = [];
-  }
 
   room.penaltyRecap.push({
     penaltyNumber: room.penaltyRecap.length + 1,
@@ -684,28 +711,36 @@ function createRoom(ws, selectedTeam, options = {}) {
       A: { ws, team: safeTeam },
       B: null
     },
-    questions: cloneQuestions(),
-    questionCursor: 0,
+
+    questions: options.questions || [],
+    schoolLevel: options.schoolLevel || null,
+    questionDifficulty: options.questionDifficulty || null,
+    subject: options.subject || null,
+
     questionOrder: [],
     questionOrderCursor: 0,
+
     shotIndex: 0,
     currentShooter: "A",
     answers: { A: null, B: null },
     correct: 0,
+
     questionTimeout: null,
     transitionTimeout: null,
     questionDisplayTimeout: null,
     botAnswerTimeout: null,
+
     roundResolved: false,
+
     score: { A: 0, B: 0 },
     shots: { A: 0, B: 0 },
     history: [],
     penaltyRecap: [],
+
     isSuddenDeath: false,
     suddenDeathPairShots: { A: 0, B: 0 },
     suddenDeathPairGoals: { A: 0, B: 0 },
 
-    // SOLO ONLY
     isSolo: options.isSolo || false,
     botDifficulty: options.botDifficulty || "medium",
     botPlayerId: options.botPlayerId || "B"
@@ -760,20 +795,67 @@ wss.on("connection", (ws) => {
 
       if (data.type === "CREATE_BATTLE") {
         const team = data.team === "Brazil" ? "Brazil" : "France";
-        createRoom(ws, team);
+        const schoolLevel = safeSchoolLevel(data.schoolLevel);
+        const questionDifficulty = safeQuestionDifficulty(data.questionDifficulty);
+        const subject = safeSubject(data.subject);
+
+        let selectedQuestions;
+        try {
+          selectedQuestions = loadQuestionsByPath(
+            schoolLevel,
+            questionDifficulty,
+            subject
+          );
+        } catch (err) {
+          log("Erreur chargement questions duo:", err);
+          send(ws, {
+            type: "ERROR",
+            message: "Impossible de charger les questions pour ce niveau / cette matière"
+          });
+          return;
+        }
+
+        createRoom(ws, team, {
+          questions: cloneQuestions(selectedQuestions),
+          schoolLevel,
+          questionDifficulty,
+          subject
+        });
+
         return;
       }
 
       if (data.type === "CREATE_SOLO_BATTLE") {
         const team = data.team === "Brazil" ? "Brazil" : "France";
-        const difficulty = ["easy", "medium", "expert"].includes(data.difficulty)
-          ? data.difficulty
-          : "medium";
+        const schoolLevel = safeSchoolLevel(data.schoolLevel);
+        const questionDifficulty = safeQuestionDifficulty(data.questionDifficulty);
+        const subject = safeSubject(data.subject);
+        const botDifficulty = safeBotDifficulty(data.botDifficulty);
+
+        let selectedQuestions;
+        try {
+          selectedQuestions = loadQuestionsByPath(
+            schoolLevel,
+            questionDifficulty,
+            subject
+          );
+        } catch (err) {
+          log("Erreur chargement questions solo:", err);
+          send(ws, {
+            type: "ERROR",
+            message: "Impossible de charger les questions pour ce niveau / cette matière"
+          });
+          return;
+        }
 
         createRoom(ws, team, {
           isSolo: true,
-          botDifficulty: difficulty,
-          botPlayerId: "B"
+          botDifficulty,
+          botPlayerId: "B",
+          schoolLevel,
+          questionDifficulty,
+          subject,
+          questions: cloneQuestions(selectedQuestions)
         });
 
         const info = clients.get(ws);
@@ -794,13 +876,19 @@ wss.on("connection", (ws) => {
           type: "SOLO_TEAMS_ASSIGNED",
           yourTeam: room.players.A.team,
           opponentTeam: room.players.B.team,
-          difficulty
+          schoolLevel,
+          questionDifficulty,
+          subject,
+          botDifficulty
         });
 
         send(room.players.A.ws, {
           type: "BATTLE_READY",
           yourTeam: room.players.A.team,
-          opponentTeam: room.players.B.team
+          opponentTeam: room.players.B.team,
+          schoolLevel,
+          questionDifficulty,
+          subject
         });
 
         setTimeout(() => {
@@ -848,13 +936,19 @@ wss.on("connection", (ws) => {
         send(room.players.A.ws, {
           type: "BATTLE_READY",
           yourTeam: room.players.A.team,
-          opponentTeam: room.players.B.team
+          opponentTeam: room.players.B.team,
+          schoolLevel: room.schoolLevel,
+          questionDifficulty: room.questionDifficulty,
+          subject: room.subject
         });
 
         send(room.players.B.ws, {
           type: "BATTLE_READY",
           yourTeam: room.players.B.team,
-          opponentTeam: room.players.A.team
+          opponentTeam: room.players.A.team,
+          schoolLevel: room.schoolLevel,
+          questionDifficulty: room.questionDifficulty,
+          subject: room.subject
         });
 
         setTimeout(() => {
