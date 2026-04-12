@@ -37,6 +37,24 @@ const VIDEO_PATHS = {
   FINAL_DRAW: "VIDEO/FINAL/draw"
 };
 
+const SOLO_BOT_PROFILES = {
+  easy: {
+    correctChance: 0.45,
+    minTimeMs: 2600,
+    maxTimeMs: 4200
+  },
+  medium: {
+    correctChance: 0.65,
+    minTimeMs: 1700,
+    maxTimeMs: 3000
+  },
+  expert: {
+    correctChance: 0.85,
+    minTimeMs: 900,
+    maxTimeMs: 1800
+  }
+};
+
 function log(...args) {
   console.log(new Date().toISOString(), ...args);
 }
@@ -48,6 +66,14 @@ function getOppositeTeam(team) {
 function getRandomVideoPath(folder, max) {
   const n = Math.floor(Math.random() * max) + 1;
   return `${folder}/${n}.mp4`;
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getSoloProfile(difficulty) {
+  return SOLO_BOT_PROFILES[difficulty] || SOLO_BOT_PROFILES.medium;
 }
 
 function loadQuestions() {
@@ -165,6 +191,13 @@ function clearQuestionDisplayTimeout(room) {
   }
 }
 
+function clearBotAnswerTimeout(room) {
+  if (room.botAnswerTimeout) {
+    clearTimeout(room.botAnswerTimeout);
+    room.botAnswerTimeout = null;
+  }
+}
+
 function getShooterByShotIndex(shotIndex) {
   return shotIndex % 2 === 0 ? "A" : "B";
 }
@@ -179,6 +212,7 @@ function getIdleVideoForShooter(room, shooterId) {
   if (shooterTeam === "France") {
     return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 5);
   }
+
   return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 5);
 }
 
@@ -285,6 +319,7 @@ function finishSession(room) {
   clearQuestionTimeout(room);
   clearTransitionTimeout(room);
   clearQuestionDisplayTimeout(room);
+  clearBotAnswerTimeout(room);
 
   let finalWinner = "draw";
   let finalText = "SEANCE TERMINEE - EGALITE";
@@ -360,10 +395,60 @@ function getNextQuestion(room) {
   return shuffleQuestionAnswers(room.questions[questionIndex]);
 }
 
+function pickWrongAnswer(correctAnswer) {
+  const choices = [0, 1, 2, 3].filter((n) => n !== correctAnswer);
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+function scheduleSoloBotAnswer(room) {
+  if (!room.isSolo) return;
+
+  clearBotAnswerTimeout(room);
+
+  const botId = room.botPlayerId || "B";
+  const profile = getSoloProfile(room.botDifficulty);
+
+  const willBeCorrect = Math.random() < profile.correctChance;
+  const responseTime = randomInt(profile.minTimeMs, profile.maxTimeMs);
+
+  const botAnswer = willBeCorrect
+    ? room.correct
+    : pickWrongAnswer(room.correct);
+
+  room.botAnswerTimeout = setTimeout(() => {
+    try {
+      if (!room || room.roundResolved) return;
+      if (room.answers[botId] !== null) return;
+
+      room.answers[botId] = {
+        answer: botAnswer,
+        time: responseTime
+      };
+
+      broadcast(room, {
+        type: "ANSWER_RECEIVED",
+        roomCode: room.code,
+        playerId: botId
+      });
+
+      log(
+        `BOT ANSWER [${room.botDifficulty}] -> ${botId} | answer=${botAnswer} | time=${responseTime}`
+      );
+
+      if (room.answers.A && room.answers.B) {
+        computeRoundResult(room);
+      }
+    } catch (err) {
+      log("scheduleSoloBotAnswer crash:", err);
+    }
+  }, responseTime);
+}
+
 function startQuestion(room) {
   clearQuestionTimeout(room);
   clearTransitionTimeout(room);
   clearQuestionDisplayTimeout(room);
+  clearBotAnswerTimeout(room);
 
   const q = getNextQuestion(room);
   if (!q) {
@@ -403,6 +488,10 @@ function startQuestion(room) {
         history: room.history,
         isSuddenDeath: room.isSuddenDeath
       });
+
+      if (room.isSolo) {
+        scheduleSoloBotAnswer(room);
+      }
 
       room.questionTimeout = setTimeout(() => {
         try {
@@ -477,6 +566,7 @@ function computeRoundResult(room) {
   room.roundResolved = true;
   clearQuestionTimeout(room);
   clearQuestionDisplayTimeout(room);
+  clearBotAnswerTimeout(room);
 
   const A = room.answers.A;
   const B = room.answers.B;
@@ -584,7 +674,7 @@ function computeRoundResult(room) {
   scheduleNextQuestionAfterPenalty(room);
 }
 
-function createRoom(ws, selectedTeam) {
+function createRoom(ws, selectedTeam, options = {}) {
   const code = createUniqueRoomCode();
   const safeTeam = selectedTeam === "Brazil" ? "Brazil" : "France";
 
@@ -605,6 +695,7 @@ function createRoom(ws, selectedTeam) {
     questionTimeout: null,
     transitionTimeout: null,
     questionDisplayTimeout: null,
+    botAnswerTimeout: null,
     roundResolved: false,
     score: { A: 0, B: 0 },
     shots: { A: 0, B: 0 },
@@ -612,7 +703,12 @@ function createRoom(ws, selectedTeam) {
     penaltyRecap: [],
     isSuddenDeath: false,
     suddenDeathPairShots: { A: 0, B: 0 },
-    suddenDeathPairGoals: { A: 0, B: 0 }
+    suddenDeathPairGoals: { A: 0, B: 0 },
+
+    // SOLO ONLY
+    isSolo: options.isSolo || false,
+    botDifficulty: options.botDifficulty || "medium",
+    botPlayerId: options.botPlayerId || "B"
   };
 
   rooms.set(code, room);
@@ -645,6 +741,7 @@ function cleanupClient(ws) {
         clearQuestionTimeout(room);
         clearTransitionTimeout(room);
         clearQuestionDisplayTimeout(room);
+        clearBotAnswerTimeout(room);
         rooms.delete(room.code);
       }
     }
@@ -669,7 +766,15 @@ wss.on("connection", (ws) => {
 
       if (data.type === "CREATE_SOLO_BATTLE") {
         const team = data.team === "Brazil" ? "Brazil" : "France";
-        createRoom(ws, team);
+        const difficulty = ["easy", "medium", "expert"].includes(data.difficulty)
+          ? data.difficulty
+          : "medium";
+
+        createRoom(ws, team, {
+          isSolo: true,
+          botDifficulty: difficulty,
+          botPlayerId: "B"
+        });
 
         const info = clients.get(ws);
         const room = info && info.room ? rooms.get(info.room) : null;
@@ -680,14 +785,16 @@ wss.on("connection", (ws) => {
         }
 
         room.players.B = {
-          ws,
-          team: getOppositeTeam(room.players.A.team)
+          ws: null,
+          team: getOppositeTeam(room.players.A.team),
+          isBot: true
         };
 
         send(ws, {
           type: "SOLO_TEAMS_ASSIGNED",
           yourTeam: room.players.A.team,
-          opponentTeam: room.players.B.team
+          opponentTeam: room.players.B.team,
+          difficulty
         });
 
         send(room.players.A.ws, {
