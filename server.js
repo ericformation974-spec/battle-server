@@ -25,6 +25,9 @@ const REGULAR_TOTAL_SHOTS = REGULAR_SHOTS_PER_TEAM * 2;
 const rooms = new Map();
 const clients = new Map();
 
+// File d'attente WORLD
+let waitingWorldPlayer = null;
+
 const VIDEO_PATHS = {
   F_YES: "VIDEO/F_yes",
   F_NO: "VIDEO/F_no",
@@ -182,6 +185,7 @@ function broadcast(room, data) {
   ["A", "B"].forEach((id) => {
     const player = room.players[id];
     if (!player) return;
+    if (!player.ws) return;
     send(player.ws, data);
   });
 }
@@ -287,40 +291,11 @@ function getFinalVideoByTeam(team) {
   return getRandomVideoPath(VIDEO_PATHS.FINAL_DRAW, 3);
 }
 
-function canEndEarlyDuringRegular(room) {
-  if (room.isSuddenDeath) return false;
-
-  const remainingA = REGULAR_SHOTS_PER_TEAM - room.shots.A;
-  const remainingB = REGULAR_SHOTS_PER_TEAM - room.shots.B;
-
-  if (room.score.A > room.score.B + remainingB) return true;
-  if (room.score.B > room.score.A + remainingA) return true;
-
-  return false;
-}
-
 function resetSuddenDeathPair(room) {
   room.suddenDeathPairShots = { A: 0, B: 0 };
   room.suddenDeathPairGoals = { A: 0, B: 0 };
 }
 
-function getSuddenDeathWinner(room) {
-  if (!room.isSuddenDeath) return null;
-
-  if (room.suddenDeathPairShots.A === 1 && room.suddenDeathPairShots.B === 1) {
-    if (room.suddenDeathPairGoals.A > room.suddenDeathPairGoals.B) return "A";
-    if (room.suddenDeathPairGoals.B > room.suddenDeathPairGoals.A) return "B";
-  }
-
-  return null;
-}
-
-/*
-  Nouvelle fonction centrale :
-  - décide si la séance est finie
-  - décide s'il faut entrer en mort subite
-  - décide s'il faut démarrer une nouvelle paire de mort subite
-*/
 function getSessionWinner(room) {
   const scoreA = room.score.A;
   const scoreB = room.score.B;
@@ -331,11 +306,9 @@ function getSessionWinner(room) {
     const remainingA = REGULAR_SHOTS_PER_TEAM - shotsA;
     const remainingB = REGULAR_SHOTS_PER_TEAM - shotsB;
 
-    // Victoire mathématique avant la fin des 5 tirs chacun
     if (scoreA > scoreB + remainingB) return "A";
     if (scoreB > scoreA + remainingA) return "B";
 
-    // Fin des 5 tirs chacun
     if (shotsA >= REGULAR_SHOTS_PER_TEAM && shotsB >= REGULAR_SHOTS_PER_TEAM) {
       if (scoreA > scoreB) return "A";
       if (scoreB > scoreA) return "B";
@@ -345,7 +318,6 @@ function getSessionWinner(room) {
     return null;
   }
 
-  // Mort subite : on tranche seulement quand les 2 ont tiré dans la paire
   if (room.suddenDeathPairShots.A === 1 && room.suddenDeathPairShots.B === 1) {
     if (room.suddenDeathPairGoals.A > room.suddenDeathPairGoals.B) return "A";
     if (room.suddenDeathPairGoals.B > room.suddenDeathPairGoals.A) return "B";
@@ -588,13 +560,11 @@ function scheduleNextQuestionAfterPenalty(room) {
     try {
       const state = getSessionWinner(room);
 
-      // Un vainqueur est déjà trouvé
       if (state === "A" || state === "B") {
         finishSession(room);
         return;
       }
 
-      // Fin des 5 tirs chacun à égalité => mort subite
       if (state === "sudden_death") {
         room.isSuddenDeath = true;
         resetSuddenDeathPair(room);
@@ -602,14 +572,12 @@ function scheduleNextQuestionAfterPenalty(room) {
         return;
       }
 
-      // Fin d'une paire de mort subite sans vainqueur => nouvelle paire
       if (state === "next_pair") {
         resetSuddenDeathPair(room);
         startQuestion(room);
         return;
       }
 
-      // Sinon on continue normalement
       startQuestion(room);
     } catch (err) {
       log("scheduleNextQuestionAfterPenalty crash:", err);
@@ -776,6 +744,7 @@ function createRoom(ws, selectedTeam, options = {}) {
     suddenDeathPairGoals: { A: 0, B: 0 },
 
     isSolo: options.isSolo || false,
+    isWorld: options.isWorld || false,
     botDifficulty: options.botDifficulty || "medium",
     botPlayerId: options.botPlayerId || "B"
   };
@@ -789,9 +758,113 @@ function createRoom(ws, selectedTeam, options = {}) {
     playerId: "A",
     team: safeTeam
   });
+
+  return room;
+}
+
+function handleFindWorldBattle(ws) {
+  const schoolLevel = "middle_school";
+  const questionDifficulty = "medium";
+  const subject = "math";
+
+  let selectedQuestions;
+  try {
+    selectedQuestions = loadQuestionsByPath(
+      schoolLevel,
+      questionDifficulty,
+      subject
+    );
+  } catch (err) {
+    log("Erreur chargement questions world:", err);
+    send(ws, {
+      type: "ERROR",
+      message: "Impossible de charger les questions WORLD"
+    });
+    return;
+  }
+
+  if (!waitingWorldPlayer) {
+    const room = createRoom(ws, "France", {
+      questions: cloneQuestions(selectedQuestions),
+      schoolLevel,
+      questionDifficulty,
+      subject,
+      isWorld: true
+    });
+
+    waitingWorldPlayer = {
+      ws,
+      roomCode: room.code
+    };
+
+    send(ws, {
+      type: "WORLD_WAITING",
+      message: "En attente d'un adversaire..."
+    });
+
+    return;
+  }
+
+  const room = rooms.get(waitingWorldPlayer.roomCode);
+
+  if (!room || !room.players.A || !room.players.A.ws) {
+    waitingWorldPlayer = null;
+    send(ws, {
+      type: "ERROR",
+      message: "Matchmaking indisponible, réessaie"
+    });
+    return;
+  }
+
+  room.players.B = { ws, team: "Brazil" };
+  clients.set(ws, { room: room.code, id: "B" });
+
+  send(ws, {
+    type: "ROOM_JOINED",
+    roomCode: room.code,
+    playerId: "B",
+    team: "Brazil"
+  });
+
+  send(room.players.A.ws, {
+    type: "OPPONENT_JOINED",
+    opponentTeam: "Brazil"
+  });
+
+  send(room.players.A.ws, {
+    type: "BATTLE_READY",
+    yourTeam: "France",
+    opponentTeam: "Brazil",
+    schoolLevel,
+    questionDifficulty,
+    subject
+  });
+
+  send(room.players.B.ws, {
+    type: "BATTLE_READY",
+    yourTeam: "Brazil",
+    opponentTeam: "France",
+    schoolLevel,
+    questionDifficulty,
+    subject
+  });
+
+  waitingWorldPlayer = null;
+
+  setTimeout(() => {
+    try {
+      startQuestion(room);
+    } catch (err) {
+      log("startQuestion world crash:", err);
+    }
+  }, 1000);
 }
 
 function cleanupClient(ws) {
+  if (waitingWorldPlayer && waitingWorldPlayer.ws === ws) {
+    waitingWorldPlayer = null;
+  }
+
   const info = clients.get(ws);
 
   if (info && info.room) {
@@ -882,7 +955,7 @@ wss.on("connection", (ws) => {
           return;
         }
 
-        createRoom(ws, team, {
+        const room = createRoom(ws, team, {
           isSolo: true,
           botDifficulty,
           botPlayerId: "B",
@@ -891,14 +964,6 @@ wss.on("connection", (ws) => {
           subject,
           questions: cloneQuestions(selectedQuestions)
         });
-
-        const info = clients.get(ws);
-        const room = info && info.room ? rooms.get(info.room) : null;
-
-        if (!room) {
-          send(ws, { type: "ERROR", message: "Impossible de créer la room solo" });
-          return;
-        }
 
         room.players.B = {
           ws: null,
@@ -993,6 +1058,11 @@ wss.on("connection", (ws) => {
           }
         }, 1000);
 
+        return;
+      }
+
+      if (data.type === "FIND_WORLD_BATTLE") {
+        handleFindWorldBattle(ws);
         return;
       }
 
