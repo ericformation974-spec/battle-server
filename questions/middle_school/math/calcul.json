@@ -1,39 +1,24 @@
 {
   "questions": [
-    {
-      "questionText": "77 X 8 ?",
-      "answers": ["626", "608", "639", "646"],
-      "correctAnswer": 0
-    },
-    {
-      "questionText": "34 X 11 ?",
-      "answers": ["351", "331", "341", "374"],
-      "correctAnswer": 0
-    },
-    {
-      "questionText": "34 X 8 ?",
-      "answers": ["272", "282", "262", "282"],
-      "correctAnswer": 0
-    },
-    {
-      "questionText": "12 X 8 ?",
-      "answers": ["96", "93", "98", "106"],
-      "correctAnswer": 0
-    },
-    {
-      "questionText": "9 X 9 ?",
-      "answers": ["78", "80", "82", "81"],
-      "correctAnswer": 3
-    },
-    {
-      "questionText": "7 X 6 ?",
-      "answers": ["34", "87", "42", "51"],
-      "correctAnswer": 2
-    },
-    {
-      "questionText": "10 X 4 ?",
-      "answers": ["55", "40", "44", "43"],
-      "correctAnswer": 1
-    }
+    {"questionText": "12 + 15 = ?", "answers": ["25", "27", "30", "26"], "correctAnswer": 1},
+    {"questionText": "20 - 7 = ?", "answers": ["12", "13", "14", "15"], "correctAnswer": 1},
+    {"questionText": "6 × 8 = ?", "answers": ["42", "48", "56", "36"], "correctAnswer": 1},
+    {"questionText": "56 ÷ 7 = ?", "answers": ["6", "7", "8", "9"], "correctAnswer": 2},
+    {"questionText": "15 + 9 = ?", "answers": ["23", "24", "25", "26"], "correctAnswer": 1},
+    {"questionText": "100 - 45 = ?", "answers": ["45", "50", "55", "60"], "correctAnswer": 2},
+    {"questionText": "9 × 9 = ?", "answers": ["72", "81", "90", "99"], "correctAnswer": 1},
+    {"questionText": "64 ÷ 8 = ?", "answers": ["6", "7", "8", "9"], "correctAnswer": 2},
+    {"questionText": "18 + 27 = ?", "answers": ["44", "45", "46", "47"], "correctAnswer": 1},
+    {"questionText": "72 - 36 = ?", "answers": ["34", "35", "36", "37"], "correctAnswer": 2},
+    {"questionText": "7 × 12 = ?", "answers": ["84", "72", "96", "88"], "correctAnswer": 0},
+    {"questionText": "90 ÷ 10 = ?", "answers": ["8", "9", "10", "11"], "correctAnswer": 1},
+    {"questionText": "25 × 4 = ?", "answers": ["80", "90", "100", "110"], "correctAnswer": 2},
+    {"questionText": "144 ÷ 12 = ?", "answers": ["10", "11", "12", "13"], "correctAnswer": 2},
+    {"questionText": "30 + 45 = ?", "answers": ["70", "75", "80", "85"], "correctAnswer": 1},
+    {"questionText": "81 - 29 = ?", "answers": ["50", "51", "52", "53"], "correctAnswer": 2},
+    {"questionText": "11 × 11 = ?", "answers": ["111", "121", "131", "141"], "correctAnswer": 1},
+    {"questionText": "100 ÷ 4 = ?", "answers": ["20", "25", "30", "40"], "correctAnswer": 1},
+    {"questionText": "3 × 15 = ?", "answers": ["30", "45", "60", "75"], "correctAnswer": 1},
+    {"questionText": "200 - 150 = ?", "answers": ["40", "45", "50", "60"], "correctAnswer": 2}
   ]
 }
