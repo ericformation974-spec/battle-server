@@ -94,26 +94,59 @@ function safeBotDifficulty(value) {
 }
 
 function safeSubject(value) {
-  return ["math", "french", "science", "history"].includes(value)
-    ? value
-    : "math";
+  const v = String(value || "").trim().toLowerCase();
+
+  if (["math", "science", "languages", "geography", "history"].includes(v)) {
+    return v;
+  }
+
+  return "math";
+}
+
+function safeSubtopic(subject, value) {
+  const v = String(value || "").trim().toLowerCase();
+  const safeSubj = safeSubject(subject);
+
+  const allowed = {
+    math: ["calcul", "geometry", "probability"],
+    science: ["physics", "chemistry", "biology"],
+    languages: ["english", "french", "spanish"],
+    geography: ["country", "sea", "land"],
+    history: ["conflicts", "civilisations", "politics"]
+  };
+
+  const defaults = {
+    math: "calcul",
+    science: "physics",
+    languages: "english",
+    geography: "country",
+    history: "conflicts"
+  };
+
+  if (allowed[safeSubj] && allowed[safeSubj].includes(v)) {
+    return v;
+  }
+
+  return defaults[safeSubj];
 }
 
 function getBotProfile(botDifficulty) {
   return BOT_PROFILES[safeBotDifficulty(botDifficulty)];
 }
 
-function loadQuestionsByPath(schoolLevel, questionDifficulty, subject) {
+function loadQuestionsByPath(schoolLevel, questionDifficulty, subject, subtopic) {
   const level = safeSchoolLevel(schoolLevel);
   const difficulty = safeQuestionDifficulty(questionDifficulty);
   const safeSubj = safeSubject(subject);
+  const safeSub = safeSubtopic(safeSubj, subtopic);
 
   const filePath = path.join(
     __dirname,
     "questions",
     level,
     difficulty,
-    `${safeSubj}.json`
+    safeSubj,
+    `${safeSub}.json`
   );
 
   if (!fs.existsSync(filePath)) {
@@ -717,7 +750,9 @@ function createRoom(ws, selectedTeam, options = {}) {
     questions: options.questions || [],
     schoolLevel: options.schoolLevel || null,
     questionDifficulty: options.questionDifficulty || null,
+    botDifficulty: options.botDifficulty || "medium",
     subject: options.subject || null,
+    subtopic: options.subtopic || null,
 
     questionOrder: [],
     questionOrderCursor: 0,
@@ -745,7 +780,6 @@ function createRoom(ws, selectedTeam, options = {}) {
 
     isSolo: options.isSolo || false,
     isWorld: options.isWorld || false,
-    botDifficulty: options.botDifficulty || "medium",
     botPlayerId: options.botPlayerId || "B"
   };
 
@@ -766,13 +800,15 @@ function handleFindWorldBattle(ws) {
   const schoolLevel = "middle_school";
   const questionDifficulty = "medium";
   const subject = "math";
+  const subtopic = "calcul";
 
   let selectedQuestions;
   try {
     selectedQuestions = loadQuestionsByPath(
       schoolLevel,
       questionDifficulty,
-      subject
+      subject,
+      subtopic
     );
   } catch (err) {
     log("Erreur chargement questions world:", err);
@@ -789,6 +825,7 @@ function handleFindWorldBattle(ws) {
       schoolLevel,
       questionDifficulty,
       subject,
+      subtopic,
       isWorld: true
     });
 
@@ -837,7 +874,8 @@ function handleFindWorldBattle(ws) {
     opponentTeam: "Brazil",
     schoolLevel,
     questionDifficulty,
-    subject
+    subject,
+    subtopic
   });
 
   send(room.players.B.ws, {
@@ -846,7 +884,8 @@ function handleFindWorldBattle(ws) {
     opponentTeam: "France",
     schoolLevel,
     questionDifficulty,
-    subject
+    subject,
+    subtopic
   });
 
   waitingWorldPlayer = null;
@@ -905,19 +944,21 @@ wss.on("connection", (ws) => {
         const schoolLevel = safeSchoolLevel(data.schoolLevel);
         const questionDifficulty = safeQuestionDifficulty(data.questionDifficulty);
         const subject = safeSubject(data.subject);
+        const subtopic = safeSubtopic(subject, data.subtopic);
 
         let selectedQuestions;
         try {
           selectedQuestions = loadQuestionsByPath(
             schoolLevel,
             questionDifficulty,
-            subject
+            subject,
+            subtopic
           );
         } catch (err) {
           log("Erreur chargement questions duo:", err);
           send(ws, {
             type: "ERROR",
-            message: "Impossible de charger les questions pour ce niveau / cette matière"
+            message: "Impossible de charger les questions pour ce niveau / cette matière / ce sous-theme"
           });
           return;
         }
@@ -926,7 +967,8 @@ wss.on("connection", (ws) => {
           questions: cloneQuestions(selectedQuestions),
           schoolLevel,
           questionDifficulty,
-          subject
+          subject,
+          subtopic
         });
 
         return;
@@ -937,6 +979,7 @@ wss.on("connection", (ws) => {
         const schoolLevel = safeSchoolLevel(data.schoolLevel);
         const questionDifficulty = safeQuestionDifficulty(data.questionDifficulty);
         const subject = safeSubject(data.subject);
+        const subtopic = safeSubtopic(subject, data.subtopic);
         const botDifficulty = safeBotDifficulty(data.botDifficulty);
 
         let selectedQuestions;
@@ -944,13 +987,14 @@ wss.on("connection", (ws) => {
           selectedQuestions = loadQuestionsByPath(
             schoolLevel,
             questionDifficulty,
-            subject
+            subject,
+            subtopic
           );
         } catch (err) {
           log("Erreur chargement questions solo:", err);
           send(ws, {
             type: "ERROR",
-            message: "Impossible de charger les questions pour ce niveau / cette matière"
+            message: "Impossible de charger les questions pour ce niveau / cette matière / ce sous-theme"
           });
           return;
         }
@@ -962,6 +1006,7 @@ wss.on("connection", (ws) => {
           schoolLevel,
           questionDifficulty,
           subject,
+          subtopic,
           questions: cloneQuestions(selectedQuestions)
         });
 
@@ -978,6 +1023,7 @@ wss.on("connection", (ws) => {
           schoolLevel,
           questionDifficulty,
           subject,
+          subtopic,
           botDifficulty
         });
 
@@ -987,7 +1033,8 @@ wss.on("connection", (ws) => {
           opponentTeam: room.players.B.team,
           schoolLevel,
           questionDifficulty,
-          subject
+          subject,
+          subtopic
         });
 
         setTimeout(() => {
@@ -1038,7 +1085,8 @@ wss.on("connection", (ws) => {
           opponentTeam: room.players.B.team,
           schoolLevel: room.schoolLevel,
           questionDifficulty: room.questionDifficulty,
-          subject: room.subject
+          subject: room.subject,
+          subtopic: room.subtopic
         });
 
         send(room.players.B.ws, {
@@ -1047,7 +1095,8 @@ wss.on("connection", (ws) => {
           opponentTeam: room.players.A.team,
           schoolLevel: room.schoolLevel,
           questionDifficulty: room.questionDifficulty,
-          subject: room.subject
+          subject: room.subject,
+          subtopic: room.subtopic
         });
 
         setTimeout(() => {
