@@ -1,0 +1,39 @@
+{
+  "questions": [
+    {
+      "questionText": "77 X 8 ?",
+      "answers": ["626", "608", "639", "646"],
+      "correctAnswer": 0
+    },
+    {
+      "questionText": "34 X 11 ?",
+      "answers": ["351", "331", "341", "374"],
+      "correctAnswer": 0
+    },
+    {
+      "questionText": "34 X 8 ?",
+      "answers": ["272", "282", "262", "282"],
+      "correctAnswer": 0
+    },
+    {
+      "questionText": "12 X 8 ?",
+      "answers": ["96", "93", "98", "106"],
+      "correctAnswer": 0
+    },
+    {
+      "questionText": "9 X 9 ?",
+      "answers": ["78", "80", "82", "81"],
+      "correctAnswer": 3
+    },
+    {
+      "questionText": "7 X 6 ?",
+      "answers": ["34", "87", "42", "51"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "10 X 4 ?",
+      "answers": ["55", "40", "44", "43"],
+      "correctAnswer": 1
+    }
+  ]
+}
