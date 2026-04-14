@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "World War I started in?", "answers": ["1914", "1939", "1900", "1925"], "correctAnswer": 0},
+    {"questionText": "World War II started in?", "answers": ["1914", "1939", "1945", "1920"], "correctAnswer": 1},
+    {"questionText": "World War II ended in?", "answers": ["1940", "1942", "1945", "1950"], "correctAnswer": 2},
+    {"questionText": "Who were the Allies in WWII?", "answers": ["France, UK, USA", "Germany, Italy", "Japan, China", "Spain, Portugal"], "correctAnswer": 0},
+    {"questionText": "Germany was led by?", "answers": ["Hitler", "Napoleon", "Churchill", "Roosevelt"], "correctAnswer": 0},
+    {"questionText": "A war between countries is called?", "answers": ["Conflict", "Game", "Trade", "Travel"], "correctAnswer": 0},
+    {"questionText": "Cold War was between?", "answers": ["USA and USSR", "France and Germany", "China and Japan", "UK and Spain"], "correctAnswer": 0},
+    {"questionText": "Cold War was mostly?", "answers": ["No direct fighting", "Only battles", "Only sea war", "Only air war"], "correctAnswer": 0},
+    {"questionText": "A soldier fights for?", "answers": ["Country", "Food", "School", "Game"], "correctAnswer": 0},
+    {"questionText": "Peace means?", "answers": ["No war", "Fight", "Battle", "Conflict"], "correctAnswer": 0},
+    {"questionText": "A battle is?", "answers": ["A fight", "A game", "A school", "A trip"], "correctAnswer": 0},
+    {"questionText": "Weapons are used in?", "answers": ["War", "School", "Sport", "Music"], "correctAnswer": 0},
+    {"questionText": "Armies protect?", "answers": ["Country", "Books", "Games", "Music"], "correctAnswer": 0},
+    {"questionText": "War affects?", "answers": ["People and cities", "Only animals", "Only land", "Nothing"], "correctAnswer": 0},
+    {"questionText": "A ceasefire means?", "answers": ["Stop fighting", "Start war", "Win war", "Lose war"], "correctAnswer": 0},
+    {"questionText": "A treaty is?", "answers": ["Agreement between countries", "Weapon", "Battle", "Army"], "correctAnswer": 0},
+    {"questionText": "Enemies are?", "answers": ["Opponents", "Friends", "Teachers", "Leaders"], "correctAnswer": 0},
+    {"questionText": "Allies are?", "answers": ["Partners", "Enemies", "Strangers", "Citizens"], "correctAnswer": 0},
+    {"questionText": "Wars often end with?", "answers": ["Peace agreements", "More war", "Nothing", "Games"], "correctAnswer": 0},
+    {"questionText": "Modern wars use?", "answers": ["Technology", "Only swords", "Only horses", "Only sticks"], "correctAnswer": 0}
+  ]
+}
