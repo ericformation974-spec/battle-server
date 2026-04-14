@@ -20,12 +20,10 @@ const PENALTY_RESULT_VIDEO_MS = 8000;
 const QUESTION_AFTER_IDLE_DELAY_MS = 80;
 
 const REGULAR_SHOTS_PER_TEAM = 5;
-const REGULAR_TOTAL_SHOTS = REGULAR_SHOTS_PER_TEAM * 2;
 
 const rooms = new Map();
 const clients = new Map();
 
-// File d'attente WORLD
 let waitingWorldPlayer = null;
 
 const VIDEO_PATHS = {
@@ -81,12 +79,6 @@ function safeSchoolLevel(value) {
     : "middle_school";
 }
 
-function safeQuestionDifficulty(value) {
-  return ["easy", "medium", "expert"].includes(value)
-    ? value
-    : "medium";
-}
-
 function safeBotDifficulty(value) {
   return ["easy", "medium", "expert"].includes(value)
     ? value
@@ -134,9 +126,8 @@ function getBotProfile(botDifficulty) {
   return BOT_PROFILES[safeBotDifficulty(botDifficulty)];
 }
 
-function loadQuestionsByPath(schoolLevel, questionDifficulty, subject, subtopic) {
+function loadQuestionsByPath(schoolLevel, subject, subtopic) {
   const level = safeSchoolLevel(schoolLevel);
-  const difficulty = safeQuestionDifficulty(questionDifficulty);
   const safeSubj = safeSubject(subject);
   const safeSub = safeSubtopic(safeSubj, subtopic);
 
@@ -144,7 +135,6 @@ function loadQuestionsByPath(schoolLevel, questionDifficulty, subject, subtopic)
     __dirname,
     "questions",
     level,
-    difficulty,
     safeSubj,
     `${safeSub}.json`
   );
@@ -749,7 +739,6 @@ function createRoom(ws, selectedTeam, options = {}) {
 
     questions: options.questions || [],
     schoolLevel: options.schoolLevel || null,
-    questionDifficulty: options.questionDifficulty || null,
     botDifficulty: options.botDifficulty || "medium",
     subject: options.subject || null,
     subtopic: options.subtopic || null,
@@ -798,7 +787,6 @@ function createRoom(ws, selectedTeam, options = {}) {
 
 function handleFindWorldBattle(ws) {
   const schoolLevel = "middle_school";
-  const questionDifficulty = "medium";
   const subject = "math";
   const subtopic = "calcul";
 
@@ -806,7 +794,6 @@ function handleFindWorldBattle(ws) {
   try {
     selectedQuestions = loadQuestionsByPath(
       schoolLevel,
-      questionDifficulty,
       subject,
       subtopic
     );
@@ -823,7 +810,6 @@ function handleFindWorldBattle(ws) {
     const room = createRoom(ws, "France", {
       questions: cloneQuestions(selectedQuestions),
       schoolLevel,
-      questionDifficulty,
       subject,
       subtopic,
       isWorld: true
@@ -873,7 +859,6 @@ function handleFindWorldBattle(ws) {
     yourTeam: "France",
     opponentTeam: "Brazil",
     schoolLevel,
-    questionDifficulty,
     subject,
     subtopic
   });
@@ -883,7 +868,6 @@ function handleFindWorldBattle(ws) {
     yourTeam: "Brazil",
     opponentTeam: "France",
     schoolLevel,
-    questionDifficulty,
     subject,
     subtopic
   });
@@ -942,7 +926,6 @@ wss.on("connection", (ws) => {
       if (data.type === "CREATE_BATTLE") {
         const team = data.team === "Brazil" ? "Brazil" : "France";
         const schoolLevel = safeSchoolLevel(data.schoolLevel);
-        const questionDifficulty = safeQuestionDifficulty(data.questionDifficulty);
         const subject = safeSubject(data.subject);
         const subtopic = safeSubtopic(subject, data.subtopic);
 
@@ -950,7 +933,6 @@ wss.on("connection", (ws) => {
         try {
           selectedQuestions = loadQuestionsByPath(
             schoolLevel,
-            questionDifficulty,
             subject,
             subtopic
           );
@@ -966,7 +948,6 @@ wss.on("connection", (ws) => {
         createRoom(ws, team, {
           questions: cloneQuestions(selectedQuestions),
           schoolLevel,
-          questionDifficulty,
           subject,
           subtopic
         });
@@ -977,7 +958,6 @@ wss.on("connection", (ws) => {
       if (data.type === "CREATE_SOLO_BATTLE") {
         const team = data.team === "Brazil" ? "Brazil" : "France";
         const schoolLevel = safeSchoolLevel(data.schoolLevel);
-        const questionDifficulty = safeQuestionDifficulty(data.questionDifficulty);
         const subject = safeSubject(data.subject);
         const subtopic = safeSubtopic(subject, data.subtopic);
         const botDifficulty = safeBotDifficulty(data.botDifficulty);
@@ -986,7 +966,6 @@ wss.on("connection", (ws) => {
         try {
           selectedQuestions = loadQuestionsByPath(
             schoolLevel,
-            questionDifficulty,
             subject,
             subtopic
           );
@@ -1004,7 +983,6 @@ wss.on("connection", (ws) => {
           botDifficulty,
           botPlayerId: "B",
           schoolLevel,
-          questionDifficulty,
           subject,
           subtopic,
           questions: cloneQuestions(selectedQuestions)
@@ -1021,10 +999,9 @@ wss.on("connection", (ws) => {
           yourTeam: room.players.A.team,
           opponentTeam: room.players.B.team,
           schoolLevel,
-          questionDifficulty,
+          botDifficulty,
           subject,
-          subtopic,
-          botDifficulty
+          subtopic
         });
 
         send(room.players.A.ws, {
@@ -1032,7 +1009,6 @@ wss.on("connection", (ws) => {
           yourTeam: room.players.A.team,
           opponentTeam: room.players.B.team,
           schoolLevel,
-          questionDifficulty,
           subject,
           subtopic
         });
@@ -1084,7 +1060,6 @@ wss.on("connection", (ws) => {
           yourTeam: room.players.A.team,
           opponentTeam: room.players.B.team,
           schoolLevel: room.schoolLevel,
-          questionDifficulty: room.questionDifficulty,
           subject: room.subject,
           subtopic: room.subtopic
         });
@@ -1094,7 +1069,6 @@ wss.on("connection", (ws) => {
           yourTeam: room.players.B.team,
           opponentTeam: room.players.A.team,
           schoolLevel: room.schoolLevel,
-          questionDifficulty: room.questionDifficulty,
           subject: room.subject,
           subtopic: room.subtopic
         });
