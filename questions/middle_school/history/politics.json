@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Who leads a country?", "answers": ["President", "Player", "Teacher", "Driver"], "correctAnswer": 0},
+    {"questionText": "Government makes?", "answers": ["Laws", "Games", "Food", "Songs"], "correctAnswer": 0},
+    {"questionText": "Democracy means?", "answers": ["People vote", "King rules", "Army rules", "No rules"], "correctAnswer": 0},
+    {"questionText": "Election is?", "answers": ["Choosing leaders", "Playing", "Cooking", "Sleeping"], "correctAnswer": 0},
+    {"questionText": "Law is?", "answers": ["Rule", "Game", "Song", "Food"], "correctAnswer": 0},
+    {"questionText": "Citizens are?", "answers": ["People of a country", "Animals", "Plants", "Objects"], "correctAnswer": 0},
+    {"questionText": "Parliament is?", "answers": ["Law-making group", "Army", "School", "Company"], "correctAnswer": 0},
+    {"questionText": "Prime minister is?", "answers": ["Leader", "Teacher", "Student", "Farmer"], "correctAnswer": 0},
+    {"questionText": "Dictatorship means?", "answers": ["One person rules", "People vote", "No rules", "Games"], "correctAnswer": 0},
+    {"questionText": "Voting is?", "answers": ["Choosing leaders", "Eating", "Sleeping", "Running"], "correctAnswer": 0},
+    {"questionText": "Government works for?", "answers": ["People", "Animals", "Trees", "Nothing"], "correctAnswer": 0},
+    {"questionText": "Rights are?", "answers": ["Freedoms", "Weapons", "Games", "Rules only"], "correctAnswer": 0},
+    {"questionText": "Responsibilities are?", "answers": ["Duties", "Games", "Food", "Nothing"], "correctAnswer": 0},
+    {"questionText": "Politics is about?", "answers": ["Running country", "Games", "Music", "Food"], "correctAnswer": 0},
+    {"questionText": "Laws must be?", "answers": ["Followed", "Ignored", "Broken", "Hidden"], "correctAnswer": 0},
+    {"questionText": "Leader decisions affect?", "answers": ["Everyone", "No one", "Only leaders", "Animals"], "correctAnswer": 0},
+    {"questionText": "A constitution is?", "answers": ["Basic laws", "Weapon", "Game", "Food"], "correctAnswer": 0},
+    {"questionText": "Freedom of speech means?", "answers": ["Say opinions", "Stay silent", "Only leaders speak", "No talking"], "correctAnswer": 0},
+    {"questionText": "Taxes are?", "answers": ["Money for government", "Food", "Games", "Rules"], "correctAnswer": 0},
+    {"questionText": "A country has borders?", "answers": ["Yes", "No", "Never", "Sometimes"], "correctAnswer": 0}
+  ]
+}

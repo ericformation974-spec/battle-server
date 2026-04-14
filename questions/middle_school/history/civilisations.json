@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Ancient Egypt is famous for?", "answers": ["Pyramids", "Cars", "Phones", "Planes"], "correctAnswer": 0},
+    {"questionText": "Ancient Rome was in?", "answers": ["Italy", "France", "Spain", "Germany"], "correctAnswer": 0},
+    {"questionText": "Ancient Greece is known for?", "answers": ["Philosophy", "Cars", "Computers", "TV"], "correctAnswer": 0},
+    {"questionText": "Pharaoh was?", "answers": ["Egyptian king", "Roman soldier", "Greek teacher", "Farmer"], "correctAnswer": 0},
+    {"questionText": "Romans built?", "answers": ["Roads", "Phones", "Internet", "TV"], "correctAnswer": 0},
+    {"questionText": "A civilisation is?", "answers": ["Organized society", "Animal", "Plant", "Object"], "correctAnswer": 0},
+    {"questionText": "Egyptians wrote on?", "answers": ["Papyrus", "Paper", "Plastic", "Glass"], "correctAnswer": 0},
+    {"questionText": "Greek gods were?", "answers": ["Myths", "Real people", "Animals", "Kings"], "correctAnswer": 0},
+    {"questionText": "Roman Empire was?", "answers": ["Large empire", "Small village", "Island", "Forest"], "correctAnswer": 0},
+    {"questionText": "Civilisations develop?", "answers": ["Cities", "Nothing", "Only farms", "Only animals"], "correctAnswer": 0},
+    {"questionText": "Ancient means?", "answers": ["Very old", "New", "Modern", "Future"], "correctAnswer": 0},
+    {"questionText": "History studies?", "answers": ["Past", "Future", "Present only", "Nothing"], "correctAnswer": 0},
+    {"questionText": "Egypt is located in?", "answers": ["Africa", "Europe", "Asia", "America"], "correctAnswer": 0},
+    {"questionText": "Greek civilisation influenced?", "answers": ["Western culture", "Only Asia", "Only Africa", "Nothing"], "correctAnswer": 0},
+    {"questionText": "Romans spoke?", "answers": ["Latin", "English", "Greek", "French"], "correctAnswer": 0},
+    {"questionText": "Ancient people used?", "answers": ["Tools", "Computers", "Phones", "Cars"], "correctAnswer": 0},
+    {"questionText": "Civilisations create?", "answers": ["Laws", "Nothing", "Only games", "Only music"], "correctAnswer": 0},
+    {"questionText": "Writing helped?", "answers": ["Record history", "Play games", "Cook food", "Travel"], "correctAnswer": 0},
+    {"questionText": "Trade helped civilisations?", "answers": ["Grow", "Stop", "Disappear", "Fight"], "correctAnswer": 0},
+    {"questionText": "Civilisations fall due to?", "answers": ["Wars or problems", "Games", "Food", "Music"], "correctAnswer": 0}
+  ]
+}
