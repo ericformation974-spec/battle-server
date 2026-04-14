@@ -1,1 +1,25 @@
-
+{
+{
+  "questions": [
+    {"questionText": "What is a synonym of 'big'?", "answers": ["Large", "Small", "Short", "Thin"], "correctAnswer": 0},
+    {"questionText": "Opposite of 'happy'?", "answers": ["Sad", "Big", "Fast", "Bright"], "correctAnswer": 0},
+    {"questionText": "Plural of 'child'?", "answers": ["Childs", "Children", "Childes", "Child"], "correctAnswer": 1},
+    {"questionText": "Past of 'go'?", "answers": ["Goed", "Went", "Gone", "Going"], "correctAnswer": 1},
+    {"questionText": "Verb in 'She runs fast'?", "answers": ["She", "Runs", "Fast", "None"], "correctAnswer": 1},
+    {"questionText": "Noun in 'The dog barks'?", "answers": ["Dog", "Barks", "The", "None"], "correctAnswer": 0},
+    {"questionText": "Adjective in 'blue car'?", "answers": ["Blue", "Car", "The", "None"], "correctAnswer": 0},
+    {"questionText": "Correct sentence?", "answers": ["She go to school", "She goes to school", "She going school", "She gone school"], "correctAnswer": 1},
+    {"questionText": "Future of 'eat'?", "answers": ["Will eat", "Ate", "Eating", "Eats"], "correctAnswer": 0},
+    {"questionText": "Opposite of 'fast'?", "answers": ["Slow", "Quick", "Rapid", "Speed"], "correctAnswer": 0},
+    {"questionText": "Comparative of 'tall'?", "answers": ["Tallest", "Taller", "More tall", "Tall"], "correctAnswer": 1},
+    {"questionText": "Superlative of 'good'?", "answers": ["Better", "Best", "Goodest", "More good"], "correctAnswer": 1},
+    {"questionText": "Sentence needs?", "answers": ["Subject and verb", "Only verb", "Only noun", "Nothing"], "correctAnswer": 0},
+    {"questionText": "Pronoun example?", "answers": ["He", "Dog", "Run", "Blue"], "correctAnswer": 0},
+    {"questionText": "Adverb describes?", "answers": ["Verb", "Noun", "Object", "Place"], "correctAnswer": 0},
+    {"questionText": "'Quickly' is?", "answers": ["Adverb", "Noun", "Verb", "Adjective"], "correctAnswer": 0},
+    {"questionText": "Opposite of 'old'?", "answers": ["Young", "Ancient", "Big", "Long"], "correctAnswer": 0},
+    {"questionText": "Past of 'see'?", "answers": ["Seen", "Saw", "See", "Seeing"], "correctAnswer": 1},
+    {"questionText": "Plural of 'mouse'?", "answers": ["Mouses", "Mice", "Mouse", "Mices"], "correctAnswer": 1},
+    {"questionText": "Article in 'a cat'?", "answers": ["A", "Cat", "The", "None"], "correctAnswer": 0}
+  ]
+}
