@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "What does 'hola' mean?", "answers": ["Hello", "Bye", "Thanks", "Yes"], "correctAnswer": 0},
+    {"questionText": "What does 'gracias' mean?", "answers": ["Thank you", "Hello", "Sorry", "No"], "correctAnswer": 0},
+    {"questionText": "What does 'gato' mean?", "answers": ["Cat", "Dog", "Fish", "Bird"], "correctAnswer": 0},
+    {"questionText": "What does 'perro' mean?", "answers": ["Dog", "Cat", "Bird", "Fish"], "correctAnswer": 0},
+    {"questionText": "What does 'rojo' mean?", "answers": ["Red", "Blue", "Green", "Yellow"], "correctAnswer": 0},
+    {"questionText": "Plural of 'libro'?", "answers": ["Libros", "Libro", "Libroes", "Librox"], "correctAnswer": 0},
+    {"questionText": "What does 'adiós' mean?", "answers": ["Goodbye", "Hello", "Yes", "No"], "correctAnswer": 0},
+    {"questionText": "What does 'manzana' mean?", "answers": ["Apple", "Banana", "Orange", "Pear"], "correctAnswer": 0},
+    {"questionText": "What does 'escuela' mean?", "answers": ["School", "House", "Car", "Road"], "correctAnswer": 0},
+    {"questionText": "What does 'casa' mean?", "answers": ["House", "School", "Car", "Tree"], "correctAnswer": 0},
+    {"questionText": "Spanish for 'yes'?", "answers": ["Sí", "No", "Hola", "Gracias"], "correctAnswer": 0},
+    {"questionText": "Spanish for 'no'?", "answers": ["No", "Sí", "Hola", "Gracias"], "correctAnswer": 0},
+    {"questionText": "What does 'azul' mean?", "answers": ["Blue", "Red", "Green", "Yellow"], "correctAnswer": 0},
+    {"questionText": "What does 'verde' mean?", "answers": ["Green", "Blue", "Red", "Yellow"], "correctAnswer": 0},
+    {"questionText": "What does 'amarillo' mean?", "answers": ["Yellow", "Green", "Blue", "Red"], "correctAnswer": 0},
+    {"questionText": "Spanish for 'one'?", "answers": ["Uno", "Dos", "Tres", "Cuatro"], "correctAnswer": 0},
+    {"questionText": "Spanish for 'two'?", "answers": ["Dos", "Uno", "Tres", "Cuatro"], "correctAnswer": 0},
+    {"questionText": "Spanish for 'three'?", "answers": ["Tres", "Dos", "Uno", "Cuatro"], "correctAnswer": 0},
+    {"questionText": "Spanish for 'four'?", "answers": ["Cuatro", "Tres", "Dos", "Uno"], "correctAnswer": 0},
+    {"questionText": "What does 'agua' mean?", "answers": ["Water", "Fire", "Air", "Earth"], "correctAnswer": 0}
+  ]
+}

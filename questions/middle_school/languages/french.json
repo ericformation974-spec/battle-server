@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "What does 'bonjour' mean?", "answers": ["Hello", "Goodbye", "Thanks", "Yes"], "correctAnswer": 0},
+    {"questionText": "What does 'merci' mean?", "answers": ["Thank you", "Hello", "Sorry", "No"], "correctAnswer": 0},
+    {"questionText": "What does 'chat' mean?", "answers": ["Cat", "Dog", "Bird", "Fish"], "correctAnswer": 0},
+    {"questionText": "What does 'chien' mean?", "answers": ["Dog", "Cat", "Fish", "Bird"], "correctAnswer": 0},
+    {"questionText": "What does 'rouge' mean?", "answers": ["Red", "Blue", "Green", "Yellow"], "correctAnswer": 0},
+    {"questionText": "Plural of 'chat'?", "answers": ["Chats", "Chat", "Chates", "Chatx"], "correctAnswer": 0},
+    {"questionText": "What does 'au revoir' mean?", "answers": ["Goodbye", "Hello", "Yes", "No"], "correctAnswer": 0},
+    {"questionText": "What does 'pomme' mean?", "answers": ["Apple", "Banana", "Orange", "Pear"], "correctAnswer": 0},
+    {"questionText": "What does 'livre' mean?", "answers": ["Book", "Pen", "Table", "Chair"], "correctAnswer": 0},
+    {"questionText": "What does 'école' mean?", "answers": ["School", "House", "Car", "Road"], "correctAnswer": 0},
+    {"questionText": "What does 'maison' mean?", "answers": ["House", "School", "Car", "Tree"], "correctAnswer": 0},
+    {"questionText": "French for 'yes'?", "answers": ["Oui", "Non", "Merci", "Bonjour"], "correctAnswer": 0},
+    {"questionText": "French for 'no'?", "answers": ["Non", "Oui", "Merci", "Salut"], "correctAnswer": 0},
+    {"questionText": "What does 'bleu' mean?", "answers": ["Blue", "Red", "Green", "Yellow"], "correctAnswer": 0},
+    {"questionText": "What does 'vert' mean?", "answers": ["Green", "Blue", "Red", "Yellow"], "correctAnswer": 0},
+    {"questionText": "What does 'jaune' mean?", "answers": ["Yellow", "Green", "Blue", "Red"], "correctAnswer": 0},
+    {"questionText": "What does 'merci beaucoup' mean?", "answers": ["Thank you very much", "Hello", "Goodbye", "Sorry"], "correctAnswer": 0},
+    {"questionText": "French for 'one'?", "answers": ["Un", "Deux", "Trois", "Quatre"], "correctAnswer": 0},
+    {"questionText": "French for 'two'?", "answers": ["Deux", "Un", "Trois", "Quatre"], "correctAnswer": 0},
+    {"questionText": "French for 'three'?", "answers": ["Trois", "Deux", "Un", "Quatre"], "correctAnswer": 0}
+  ]
+}
