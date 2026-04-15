@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "What force pulls us down?", "answers": ["Gravity", "Wind", "Light", "Heat"], "correctAnswer": 0},
+    {"questionText": "What do we use to see?", "answers": ["Eyes", "Ears", "Nose", "Hands"], "correctAnswer": 0},
+    {"questionText": "What gives light?", "answers": ["Sun", "Moon", "Water", "Rock"], "correctAnswer": 0},
+    {"questionText": "Sound travels through?", "answers": ["Air", "Nothing", "Light", "Water"], "correctAnswer": 0},
+    {"questionText": "What is energy?", "answers": ["Power", "Food", "Water", "Stone"], "correctAnswer": 0},
+    {"questionText": "Electricity is?", "answers": ["Energy", "Food", "Water", "Air"], "correctAnswer": 0},
+    {"questionText": "What moves objects?", "answers": ["Force", "Time", "Color", "Shape"], "correctAnswer": 0},
+    {"questionText": "Friction slows?", "answers": ["Movement", "Light", "Sound", "Air"], "correctAnswer": 0},
+    {"questionText": "Heat is?", "answers": ["Energy", "Water", "Air", "Food"], "correctAnswer": 0},
+    {"questionText": "Light travels fast?", "answers": ["Yes", "No", "Slow", "Never"], "correctAnswer": 0},
+    {"questionText": "Water boils at?", "answers": ["100°C", "0°C", "50°C", "200°C"], "correctAnswer": 0},
+    {"questionText": "Ice melts?", "answers": ["Yes", "No", "Never", "Maybe"], "correctAnswer": 0},
+    {"questionText": "Push is a?", "answers": ["Force", "Light", "Sound", "Color"], "correctAnswer": 0},
+    {"questionText": "Pull is a?", "answers": ["Force", "Light", "Sound", "Shape"], "correctAnswer": 0},
+    {"questionText": "The sun is hot?", "answers": ["Yes", "No", "Cold", "Warm"], "correctAnswer": 0},
+    {"questionText": "Air is?", "answers": ["Gas", "Liquid", "Solid", "Food"], "correctAnswer": 0},
+    {"questionText": "Water is?", "answers": ["Liquid", "Gas", "Solid", "Rock"], "correctAnswer": 0},
+    {"questionText": "Ice is?", "answers": ["Solid", "Gas", "Liquid", "Fire"], "correctAnswer": 0},
+    {"questionText": "Energy can change?", "answers": ["Yes", "No", "Never", "Impossible"], "correctAnswer": 0},
+    {"questionText": "Light helps us?", "answers": ["See", "Hear", "Taste", "Smell"], "correctAnswer": 0}
+  ]
+}
