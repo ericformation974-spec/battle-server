@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Hola means?", "answers": ["Hello", "Bye", "Thanks", "Yes"], "correctAnswer": 0},
+    {"questionText": "Gracias means?", "answers": ["Thank you", "Hello", "Sorry", "Good"], "correctAnswer": 0},
+    {"questionText": "Sí means?", "answers": ["Yes", "No", "Maybe", "Hello"], "correctAnswer": 0},
+    {"questionText": "No means?", "answers": ["No", "Yes", "Hello", "Bye"], "correctAnswer": 0},
+    {"questionText": "Gato means?", "answers": ["Cat", "Dog", "Fish", "Bird"], "correctAnswer": 0},
+    {"questionText": "Perro means?", "answers": ["Dog", "Cat", "Bird", "Fish"], "correctAnswer": 0},
+    {"questionText": "Rojo is?", "answers": ["Red", "Blue", "Green", "Yellow"], "correctAnswer": 0},
+    {"questionText": "Azul is?", "answers": ["Blue", "Red", "Green", "Yellow"], "correctAnswer": 0},
+    {"questionText": "Verde is?", "answers": ["Green", "Blue", "Red", "Yellow"], "correctAnswer": 0},
+    {"questionText": "Amarillo is?", "answers": ["Yellow", "Green", "Red", "Blue"], "correctAnswer": 0},
+    {"questionText": "Uno means?", "answers": ["One", "Two", "Three", "Four"], "correctAnswer": 0},
+    {"questionText": "Dos means?", "answers": ["Two", "One", "Three", "Four"], "correctAnswer": 0},
+    {"questionText": "Tres means?", "answers": ["Three", "Two", "One", "Four"], "correctAnswer": 0},
+    {"questionText": "Cuatro means?", "answers": ["Four", "Three", "Two", "One"], "correctAnswer": 0},
+    {"questionText": "Adiós means?", "answers": ["Goodbye", "Hello", "Yes", "No"], "correctAnswer": 0},
+    {"questionText": "Manzana means?", "answers": ["Apple", "Banana", "Orange", "Pear"], "correctAnswer": 0},
+    {"questionText": "Libro means?", "answers": ["Book", "Pen", "Table", "Chair"], "correctAnswer": 0},
+    {"questionText": "Escuela means?", "answers": ["School", "House", "Car", "Road"], "correctAnswer": 0},
+    {"questionText": "Casa means?", "answers": ["House", "School", "Car", "Tree"], "correctAnswer": 0},
+    {"questionText": "Agua means?", "answers": ["Water", "Fire", "Air", "Earth"], "correctAnswer": 0}
+  ]
+}

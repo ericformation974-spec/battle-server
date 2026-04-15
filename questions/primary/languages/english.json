@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Bonjour means?", "answers": ["Hello", "Bye", "Thanks", "Yes"], "correctAnswer": 0},
+    {"questionText": "Merci means?", "answers": ["Thank you", "Hello", "Sorry", "Good"], "correctAnswer": 0},
+    {"questionText": "Oui means?", "answers": ["Yes", "No", "Maybe", "Hello"], "correctAnswer": 0},
+    {"questionText": "Non means?", "answers": ["No", "Yes", "Hello", "Bye"], "correctAnswer": 0},
+    {"questionText": "Chat means?", "answers": ["Cat", "Dog", "Fish", "Bird"], "correctAnswer": 0},
+    {"questionText": "Chien means?", "answers": ["Dog", "Cat", "Bird", "Fish"], "correctAnswer": 0},
+    {"questionText": "Rouge is?", "answers": ["Red", "Blue", "Green", "Yellow"], "correctAnswer": 0},
+    {"questionText": "Bleu is?", "answers": ["Blue", "Red", "Green", "Yellow"], "correctAnswer": 0},
+    {"questionText": "Vert is?", "answers": ["Green", "Blue", "Red", "Yellow"], "correctAnswer": 0},
+    {"questionText": "Jaune is?", "answers": ["Yellow", "Green", "Red", "Blue"], "correctAnswer": 0},
+    {"questionText": "Un means?", "answers": ["One", "Two", "Three", "Four"], "correctAnswer": 0},
+    {"questionText": "Deux means?", "answers": ["Two", "One", "Three", "Four"], "correctAnswer": 0},
+    {"questionText": "Trois means?", "answers": ["Three", "Two", "One", "Four"], "correctAnswer": 0},
+    {"questionText": "Quatre means?", "answers": ["Four", "Three", "Two", "One"], "correctAnswer": 0},
+    {"questionText": "Merci beaucoup means?", "answers": ["Thank you very much", "Hello", "Goodbye", "Sorry"], "correctAnswer": 0},
+    {"questionText": "Au revoir means?", "answers": ["Goodbye", "Hello", "Yes", "No"], "correctAnswer": 0},
+    {"questionText": "Pomme means?", "answers": ["Apple", "Banana", "Orange", "Pear"], "correctAnswer": 0},
+    {"questionText": "Livre means?", "answers": ["Book", "Pen", "Table", "Chair"], "correctAnswer": 0},
+    {"questionText": "École means?", "answers": ["School", "House", "Car", "Road"], "correctAnswer": 0},
+    {"questionText": "Maison means?", "answers": ["House", "School", "Car", "Tree"], "correctAnswer": 0}
+  ]
+}
