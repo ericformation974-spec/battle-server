@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Unit of force?", "answers": ["Newton", "Joule", "Watt", "Volt"], "correctAnswer": 0},
+    {"questionText": "Formula of speed?", "answers": ["distance/time", "time/distance", "mass/time", "force/time"], "correctAnswer": 0},
+    {"questionText": "Unit of energy?", "answers": ["Joule", "Newton", "Volt", "Ampere"], "correctAnswer": 0},
+    {"questionText": "Acceleration formula?", "answers": ["Δv/t", "v/t", "d/t", "t/d"], "correctAnswer": 0},
+    {"questionText": "Gravity on Earth ≈ ?", "answers": ["9.8 m/s²", "5 m/s²", "15 m/s²", "1 m/s²"], "correctAnswer": 0},
+    {"questionText": "Work formula?", "answers": ["Force × distance", "mass × speed", "distance/time", "energy/time"], "correctAnswer": 0},
+    {"questionText": "Power unit?", "answers": ["Watt", "Joule", "Newton", "Volt"], "correctAnswer": 0},
+    {"questionText": "Power formula?", "answers": ["Work/time", "Force×distance", "mass×speed", "time/distance"], "correctAnswer": 0},
+    {"questionText": "Ohm’s law?", "answers": ["V = IR", "I = VR", "R = VI", "V = I/R"], "correctAnswer": 0},
+    {"questionText": "Unit of current?", "answers": ["Ampere", "Volt", "Ohm", "Watt"], "correctAnswer": 0},
+    {"questionText": "Light speed ≈ ?", "answers": ["3×10⁸ m/s", "3×10⁶ m/s", "3×10⁴ m/s", "3×10² m/s"], "correctAnswer": 0},
+    {"questionText": "Kinetic energy formula?", "answers": ["½mv²", "mv", "m²v", "mv²"], "correctAnswer": 0},
+    {"questionText": "Potential energy formula?", "answers": ["mgh", "mv²", "mg", "gh"], "correctAnswer": 0},
+    {"questionText": "Friction does?", "answers": ["Opposes motion", "Increases speed", "Creates energy", "Stops gravity"], "correctAnswer": 0},
+    {"questionText": "Voltage measures?", "answers": ["Electric potential", "Current", "Resistance", "Power"], "correctAnswer": 0},
+    {"questionText": "Resistance unit?", "answers": ["Ohm", "Volt", "Ampere", "Watt"], "correctAnswer": 0},
+    {"questionText": "Newton’s 2nd law?", "answers": ["F=ma", "E=mc²", "V=IR", "P=IV"], "correctAnswer": 0},
+    {"questionText": "Momentum formula?", "answers": ["mv", "m²v", "v/m", "m/v"], "correctAnswer": 0},
+    {"questionText": "Energy conservation?", "answers": ["Energy constant", "Energy lost", "Energy created", "Energy destroyed"], "correctAnswer": 0},
+    {"questionText": "Wave speed?", "answers": ["frequency×wavelength", "mass×speed", "distance/time", "force/time"], "correctAnswer": 0}
+  ]
+}
