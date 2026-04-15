@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Largest ocean?", "answers": ["Pacific", "Atlantic", "Indian", "Arctic"], "correctAnswer": 0},
+    {"questionText": "Water in sea is?", "answers": ["Salty", "Sweet", "Dry", "Hot"], "correctAnswer": 0},
+    {"questionText": "Fish live in?", "answers": ["Water", "Air", "Land", "Fire"], "correctAnswer": 0},
+    {"questionText": "Ocean covers?", "answers": ["Most Earth", "None", "Half", "Small part"], "correctAnswer": 0},
+    {"questionText": "Waves are in?", "answers": ["Sea", "Sky", "Land", "Fire"], "correctAnswer": 0},
+    {"questionText": "Boat travels on?", "answers": ["Water", "Air", "Road", "Sand"], "correctAnswer": 0},
+    {"questionText": "Sea animals?", "answers": ["Fish", "Dogs", "Cats", "Birds"], "correctAnswer": 0},
+    {"questionText": "Whales live in?", "answers": ["Ocean", "Forest", "Desert", "Sky"], "correctAnswer": 0},
+    {"questionText": "Sharks are?", "answers": ["Fish", "Birds", "Mammals", "Reptiles"], "correctAnswer": 0},
+    {"questionText": "Coral is?", "answers": ["Sea life", "Rock", "Plant", "Metal"], "correctAnswer": 0},
+    {"questionText": "Sea is deep?", "answers": ["Yes", "No", "Flat", "Dry"], "correctAnswer": 0},
+    {"questionText": "Tides are?", "answers": ["Water movement", "Wind", "Fire", "Earth"], "correctAnswer": 0},
+    {"questionText": "Submarine goes?", "answers": ["Underwater", "Sky", "Land", "Fire"], "correctAnswer": 0},
+    {"questionText": "Sea color?", "answers": ["Blue", "Red", "Green", "Yellow"], "correctAnswer": 0},
+    {"questionText": "Ocean animals breathe?", "answers": ["Water/Oxygen", "Air only", "Nothing", "Fire"], "correctAnswer": 0},
+    {"questionText": "Seas connect?", "answers": ["Yes", "No", "Never", "Sometimes"], "correctAnswer": 0},
+    {"questionText": "Ice floats?", "answers": ["Yes", "No", "Never", "Maybe"], "correctAnswer": 0},
+    {"questionText": "Sea level rises?", "answers": ["Yes", "No", "Never", "Maybe"], "correctAnswer": 0},
+    {"questionText": "Ocean has currents?", "answers": ["Yes", "No", "Never", "Maybe"], "correctAnswer": 0},
+    {"questionText": "Sea water drinkable?", "answers": ["No", "Yes", "Always", "Sometimes"], "correctAnswer": 0}
+  ]
+}
