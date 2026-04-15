@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "World War I started after?", "answers": ["Assassination of Archduke Franz Ferdinand", "Treaty of Versailles", "Cold War", "Industrial Revolution"], "correctAnswer": 0},
+    {"questionText": "WWI main sides?", "answers": ["Allies vs Central Powers", "Axis vs Allies", "East vs West", "North vs South"], "correctAnswer": 0},
+    {"questionText": "WWII Axis powers?", "answers": ["Germany, Italy, Japan", "France, UK, USA", "Russia, China", "Spain, Portugal"], "correctAnswer": 0},
+    {"questionText": "WWII ended in?", "answers": ["1945", "1939", "1918", "1950"], "correctAnswer": 0},
+    {"questionText": "Cold War was between?", "answers": ["USA and USSR", "France and Germany", "China and Japan", "UK and Spain"], "correctAnswer": 0},
+    {"questionText": "Cold War type?", "answers": ["Indirect conflict", "Direct war", "Civil war", "Religious war"], "correctAnswer": 0},
+    {"questionText": "NATO formed in?", "answers": ["1949", "1918", "1939", "1960"], "correctAnswer": 0},
+    {"questionText": "Warsaw Pact was led by?", "answers": ["USSR", "USA", "France", "Germany"], "correctAnswer": 0},
+    {"questionText": "Trench warfare used in?", "answers": ["WWI", "WWII", "Cold War", "Vietnam War"], "correctAnswer": 0},
+    {"questionText": "Atomic bombs dropped on?", "answers": ["Hiroshima & Nagasaki", "Berlin & Rome", "Paris & London", "Tokyo & Seoul"], "correctAnswer": 0},
+    {"questionText": "Vietnam War involved?", "answers": ["USA vs North Vietnam", "France vs Germany", "China vs Japan", "UK vs Spain"], "correctAnswer": 0},
+    {"questionText": "Civil war is?", "answers": ["Conflict within a country", "Between countries", "Trade war", "Cold war"], "correctAnswer": 0},
+    {"questionText": "Propaganda used for?", "answers": ["Influence people", "Fight battles", "Build weapons", "Transport troops"], "correctAnswer": 0},
+    {"questionText": "Treaty of Versailles ended?", "answers": ["WWI", "WWII", "Cold War", "Vietnam War"], "correctAnswer": 0},
+    {"questionText": "Genocide means?", "answers": ["Mass killing of group", "Battle", "Peace", "Trade"], "correctAnswer": 0},
+    {"questionText": "Modern warfare includes?", "answers": ["Technology", "Only swords", "Only horses", "Only shields"], "correctAnswer": 0},
+    {"questionText": "Guerrilla warfare is?", "answers": ["Small group tactics", "Large armies", "Naval war", "Air war"], "correctAnswer": 0},
+    {"questionText": "Alliances are?", "answers": ["Partnerships", "Enemies", "Neutral groups", "Citizens"], "correctAnswer": 0},
+    {"questionText": "Armistice means?", "answers": ["Stop fighting", "Start war", "Win war", "Lose war"], "correctAnswer": 0},
+    {"questionText": "WWII caused by?", "answers": ["Political tensions", "Weather", "Trade only", "Geography only"], "correctAnswer": 0}
+  ]
+} 
