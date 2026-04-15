@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Pythagoras theorem?", "answers": ["a²+b²=c²", "a+b=c", "a²=b²+c²", "a=b+c"], "correctAnswer": 0},
+    {"questionText": "Area of circle?", "answers": ["πr²", "2πr", "πd", "r²"], "correctAnswer": 0},
+    {"questionText": "Circumference?", "answers": ["2πr", "πr²", "r²", "πd²"], "correctAnswer": 0},
+    {"questionText": "Volume of cube?", "answers": ["a³", "a²", "2a", "3a"], "correctAnswer": 0},
+    {"questionText": "Triangle area?", "answers": ["½bh", "bh", "2bh", "bh²"], "correctAnswer": 0},
+    {"questionText": "Angles in triangle?", "answers": ["180°", "90°", "360°", "270°"], "correctAnswer": 0},
+    {"questionText": "Angle in straight line?", "answers": ["180°", "90°", "360°", "270°"], "correctAnswer": 0},
+    {"questionText": "Hexagon sides?", "answers": ["6", "5", "7", "8"], "correctAnswer": 0},
+    {"questionText": "Circle diameter?", "answers": ["2r", "r", "πr", "r²"], "correctAnswer": 0},
+    {"questionText": "Parallel lines?", "answers": ["Never meet", "Meet", "Cross", "Curve"], "correctAnswer": 0},
+    {"questionText": "Perpendicular lines?", "answers": ["90°", "45°", "180°", "360°"], "correctAnswer": 0},
+    {"questionText": "Volume of sphere?", "answers": ["4/3πr³", "πr²", "2πr", "r³"], "correctAnswer": 0},
+    {"questionText": "Square diagonals?", "answers": ["Equal", "Different", "None", "Parallel"], "correctAnswer": 0},
+    {"questionText": "Right triangle has?", "answers": ["90° angle", "45°", "60°", "120°"], "correctAnswer": 0},
+    {"questionText": "Cylinder volume?", "answers": ["πr²h", "2πr", "πr³", "r²h"], "correctAnswer": 0},
+    {"questionText": "Interior angles polygon formula?", "answers": ["(n-2)×180", "n×180", "n×90", "180/n"], "correctAnswer": 0},
+    {"questionText": "Isosceles triangle?", "answers": ["2 equal sides", "3 equal", "No equal", "All different"], "correctAnswer": 0},
+    {"questionText": "Scalene triangle?", "answers": ["All different", "All equal", "2 equal", "None"], "correctAnswer": 0},
+    {"questionText": "Radius of circle?", "answers": ["Half diameter", "Double", "Equal", "None"], "correctAnswer": 0},
+    {"questionText": "Area rectangle?", "answers": ["length×width", "l+w", "l²", "w²"], "correctAnswer": 0}
+  ]
+}
