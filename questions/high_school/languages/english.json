@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Choose the correct sentence:", "answers": ["She go to school", "She goes to school", "She going school", "She gone school"], "correctAnswer": 1},
+    {"questionText": "Past tense of 'go'?", "answers": ["goed", "went", "gone", "goes"], "correctAnswer": 1},
+    {"questionText": "Plural of 'child'?", "answers": ["childs", "children", "childes", "childrens"], "correctAnswer": 1},
+    {"questionText": "Synonym of 'happy'?", "answers": ["sad", "angry", "joyful", "tired"], "correctAnswer": 2},
+    {"questionText": "Antonym of 'fast'?", "answers": ["quick", "rapid", "slow", "speed"], "correctAnswer": 2},
+    {"questionText": "Correct article: ___ apple", "answers": ["a", "an", "the", "no article"], "correctAnswer": 1},
+    {"questionText": "Future form?", "answers": ["I will go", "I go", "I went", "I going"], "correctAnswer": 0},
+    {"questionText": "Comparative of 'big'?", "answers": ["big", "bigger", "biggest", "more big"], "correctAnswer": 1},
+    {"questionText": "Superlative of 'good'?", "answers": ["goodest", "better", "best", "more good"], "correctAnswer": 2},
+    {"questionText": "Present continuous?", "answers": ["I eat", "I eating", "I am eating", "I ate"], "correctAnswer": 2},
+    {"questionText": "Modal verb?", "answers": ["can", "run", "eat", "play"], "correctAnswer": 0},
+    {"questionText": "Opposite of 'early'?", "answers": ["soon", "late", "fast", "quick"], "correctAnswer": 1},
+    {"questionText": "Correct sentence:", "answers": ["He don’t like", "He doesn’t like", "He not like", "He no like"], "correctAnswer": 1},
+    {"questionText": "Which is a noun?", "answers": ["run", "happy", "dog", "quickly"], "correctAnswer": 2},
+    {"questionText": "Which is a verb?", "answers": ["table", "run", "blue", "slow"], "correctAnswer": 1},
+    {"questionText": "Adjective example?", "answers": ["quick", "run", "dog", "eat"], "correctAnswer": 0},
+    {"questionText": "Adverb example?", "answers": ["quickly", "run", "dog", "blue"], "correctAnswer": 0},
+    {"questionText": "Past of 'see'?", "answers": ["seen", "saw", "see", "seeing"], "correctAnswer": 1},
+    {"questionText": "Meaning of 'because'?", "answers": ["cause/reason", "time", "place", "question"], "correctAnswer": 0},
+    {"questionText": "Correct question:", "answers": ["Do you like?", "You like do?", "Like you do?", "Do like you?"], "correctAnswer": 0}
+  ]
+}
