@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Which country has the largest population?", "answers": ["India", "USA", "China", "Russia"], "correctAnswer": 0},
+    {"questionText": "Capital of Canada?", "answers": ["Toronto", "Ottawa", "Vancouver", "Montreal"], "correctAnswer": 1},
+    {"questionText": "Which country spans Europe and Asia?", "answers": ["France", "Turkey", "Spain", "Italy"], "correctAnswer": 1},
+    {"questionText": "Capital of Australia?", "answers": ["Sydney", "Melbourne", "Canberra", "Perth"], "correctAnswer": 2},
+    {"questionText": "Which country is landlocked?", "answers": ["Switzerland", "France", "Japan", "UK"], "correctAnswer": 0},
+    {"questionText": "Which country has the Amazon rainforest?", "answers": ["Brazil", "USA", "India", "China"], "correctAnswer": 0},
+    {"questionText": "Capital of Germany?", "answers": ["Berlin", "Munich", "Hamburg", "Frankfurt"], "correctAnswer": 0},
+    {"questionText": "Which country is in North Africa?", "answers": ["Egypt", "Spain", "Italy", "Greece"], "correctAnswer": 0},
+    {"questionText": "Which country has the largest area?", "answers": ["Russia", "USA", "China", "Canada"], "correctAnswer": 0},
+    {"questionText": "Capital of Japan?", "answers": ["Tokyo", "Osaka", "Kyoto", "Nagoya"], "correctAnswer": 0},
+    {"questionText": "Which country uses euro?", "answers": ["France", "UK", "USA", "Japan"], "correctAnswer": 0},
+    {"questionText": "Which country is an island nation?", "answers": ["Japan", "Germany", "Poland", "Austria"], "correctAnswer": 0},
+    {"questionText": "Which country is in South America?", "answers": ["Argentina", "Spain", "France", "Italy"], "correctAnswer": 0},
+    {"questionText": "Capital of Spain?", "answers": ["Madrid", "Barcelona", "Seville", "Valencia"], "correctAnswer": 0},
+    {"questionText": "Which country borders the USA to the north?", "answers": ["Canada", "Mexico", "Brazil", "Russia"], "correctAnswer": 0},
+    {"questionText": "Which country is part of Scandinavia?", "answers": ["Norway", "France", "Italy", "Spain"], "correctAnswer": 0},
+    {"questionText": "Which country is the UK capital?", "answers": ["London", "Paris", "Rome", "Berlin"], "correctAnswer": 0},
+    {"questionText": "Which country is the most populous in Africa?", "answers": ["Nigeria", "Egypt", "Kenya", "Morocco"], "correctAnswer": 0},
+    {"questionText": "Which country has Mount Fuji?", "answers": ["Japan", "China", "Korea", "Thailand"], "correctAnswer": 0},
+    {"questionText": "Which country is known for the Great Barrier Reef?", "answers": ["Australia", "USA", "India", "Brazil"], "correctAnswer": 0}
+  ]
+}

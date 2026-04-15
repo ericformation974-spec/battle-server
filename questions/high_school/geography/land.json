@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Largest continent?", "answers": ["Asia", "Africa", "Europe", "America"], "correctAnswer": 0},
+    {"questionText": "Mount Everest height approx?", "answers": ["8848m", "7000m", "9000m", "6000m"], "correctAnswer": 0},
+    {"questionText": "Tectonic plates cause?", "answers": ["Earthquakes", "Rain", "Wind", "Sun"], "correctAnswer": 0},
+    {"questionText": "Erosion caused by?", "answers": ["Wind & water", "Sun", "Heat", "Gravity only"], "correctAnswer": 0},
+    {"questionText": "Plate boundaries create?", "answers": ["Mountains", "Oceans", "Cities", "Rivers"], "correctAnswer": 0},
+    {"questionText": "Volcano erupts?", "answers": ["Magma", "Water", "Air", "Rock only"], "correctAnswer": 0},
+    {"questionText": "Rock cycle includes?", "answers": ["Formation & change", "Only erosion", "Only melting", "Only cooling"], "correctAnswer": 0},
+    {"questionText": "Desert climate is?", "answers": ["Dry", "Wet", "Cold", "Humid"], "correctAnswer": 0},
+    {"questionText": "Rainforest climate?", "answers": ["Hot & wet", "Cold & dry", "Warm & dry", "Hot & dry"], "correctAnswer": 0},
+    {"questionText": "Glaciers are?", "answers": ["Moving ice", "Rocks", "Sand", "Water"], "correctAnswer": 0},
+    {"questionText": "Soil erosion affects?", "answers": ["Farming", "Cities", "Oceans", "Sun"], "correctAnswer": 0},
+    {"questionText": "Plate tectonics explains?", "answers": ["Earth structure", "Weather", "Oceans only", "Plants"], "correctAnswer": 0},
+    {"questionText": "Valley formed by river?", "answers": ["Erosion", "Volcano", "Wind", "Earthquake"], "correctAnswer": 0},
+    {"questionText": "Delta formed at?", "answers": ["River mouth", "Mountain", "Desert", "Ocean"], "correctAnswer": 0},
+    {"questionText": "Topography studies?", "answers": ["Land features", "Weather", "Ocean", "Animals"], "correctAnswer": 0},
+    {"questionText": "Plate collision forms?", "answers": ["Mountains", "Oceans", "Rivers", "Deserts"], "correctAnswer": 0},
+    {"questionText": "Fault line is?", "answers": ["Crack in Earth", "River", "Mountain", "Ocean"], "correctAnswer": 0},
+    {"questionText": "Seismic waves from?", "answers": ["Earthquakes", "Wind", "Rain", "Sun"], "correctAnswer": 0},
+    {"questionText": "Human impact on land?", "answers": ["Deforestation", "Mountains", "Oceans", "Sun"], "correctAnswer": 0},
+    {"questionText": "Climate zones depend on?", "answers": ["Latitude", "Cities", "People", "Animals"], "correctAnswer": 0}
+  ]
+}
