@@ -15,8 +15,8 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.PORT || 3000;
-const ANSWER_TIME_LIMIT_MS = 5000;
-const PENALTY_RESULT_VIDEO_MS = 8000;
+const ANSWER_TIME_LIMIT_MS = 8000;
+const PENALTY_RESULT_VIDEO_MS = 10000;
 const QUESTION_AFTER_IDLE_DELAY_MS = 80;
 
 const REGULAR_SHOTS_PER_TEAM = 5;
