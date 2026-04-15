@@ -1,0 +1,104 @@
+{
+  "questions": [
+    {
+      "questionText": "What is the chemical symbol for water?",
+      "answers": ["O2", "H2O", "CO2", "NaCl"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Matter is anything that has?",
+      "answers": ["Light and sound", "Mass and volume", "Heat only", "Color only"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Which state of matter has a fixed shape?",
+      "answers": ["Liquid", "Gas", "Solid", "Plasma"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "Which state of matter takes the shape of its container but keeps the same volume?",
+      "answers": ["Solid", "Liquid", "Gas", "None"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Which state of matter spreads out to fill all available space?",
+      "answers": ["Solid", "Liquid", "Gas", "Ice"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "What is the change from solid to liquid called?",
+      "answers": ["Freezing", "Melting", "Boiling", "Condensing"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "What is the change from liquid to gas called?",
+      "answers": ["Freezing", "Melting", "Boiling", "Condensation"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "What is the change from gas to liquid called?",
+      "answers": ["Boiling", "Condensation", "Melting", "Evaporation"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "What is the change from liquid to solid called?",
+      "answers": ["Freezing", "Melting", "Boiling", "Condensing"],
+      "correctAnswer": 0
+    },
+    {
+      "questionText": "An atom is?",
+      "answers": ["The smallest part of an element", "A type of mixture", "A large molecule", "A kind of metal"],
+      "correctAnswer": 0
+    },
+    {
+      "questionText": "A substance made of only one kind of atom is called?",
+      "answers": ["Compound", "Mixture", "Element", "Solution"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "A compound is made of?",
+      "answers": ["Only one atom", "Two or more elements chemically joined", "Only metals", "Only liquids"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Which of these is an element?",
+      "answers": ["Water", "Oxygen", "Salt", "Sugar"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Which of these is a compound?",
+      "answers": ["Iron", "Oxygen", "Water", "Gold"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "A mixture is?",
+      "answers": ["A pure element", "Two or more substances not chemically joined", "Only gases", "Only solids"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Which method can separate sand from water?",
+      "answers": ["Melting", "Filtering", "Freezing", "Burning"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "pH 7 is called?",
+      "answers": ["Acidic", "Neutral", "Basic", "Salty"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Lemon juice is usually?",
+      "answers": ["Basic", "Neutral", "Acidic", "Metallic"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "When a substance burns in oxygen, it is called?",
+      "answers": ["Freezing", "Combustion", "Filtering", "Condensation"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "What usually happens to particles when temperature increases?",
+      "answers": ["They stop moving", "They move faster", "They disappear", "They become solid"],
+      "correctAnswer": 1
+    }
+  ]
+}
