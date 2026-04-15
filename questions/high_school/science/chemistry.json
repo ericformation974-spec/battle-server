@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Atomic number represents?", "answers": ["Protons", "Neutrons", "Electrons", "Mass"], "correctAnswer": 0},
+    {"questionText": "Water formula?", "answers": ["H2O", "CO2", "NaCl", "O2"], "correctAnswer": 0},
+    {"questionText": "pH of neutral?", "answers": ["7", "0", "14", "1"], "correctAnswer": 0},
+    {"questionText": "Acids have pH?", "answers": ["<7", ">7", "=7", "10"], "correctAnswer": 0},
+    {"questionText": "Bases have pH?", "answers": [">7", "<7", "=7", "0"], "correctAnswer": 0},
+    {"questionText": "Periodic table groups?", "answers": ["Columns", "Rows", "Blocks", "Atoms"], "correctAnswer": 0},
+    {"questionText": "NaCl is?", "answers": ["Salt", "Water", "Gas", "Metal"], "correctAnswer": 0},
+    {"questionText": "Atom smallest part of?", "answers": ["Element", "Compound", "Mixture", "Solution"], "correctAnswer": 0},
+    {"questionText": "Chemical bond?", "answers": ["Atoms joined", "Separated atoms", "Gas", "Liquid"], "correctAnswer": 0},
+    {"questionText": "Ionic bond involves?", "answers": ["Electron transfer", "Sharing electrons", "Protons", "Neutrons"], "correctAnswer": 0},
+    {"questionText": "Covalent bond?", "answers": ["Sharing electrons", "Transfer", "None", "Protons"], "correctAnswer": 0},
+    {"questionText": "Combustion needs?", "answers": ["Oxygen", "Water", "Nitrogen", "Helium"], "correctAnswer": 0},
+    {"questionText": "Molecule is?", "answers": ["Group of atoms", "Single atom", "Metal", "Gas"], "correctAnswer": 0},
+    {"questionText": "Gas particles?", "answers": ["Far apart", "Close", "Fixed", "Static"], "correctAnswer": 0},
+    {"questionText": "Solid particles?", "answers": ["Close", "Far", "Random", "None"], "correctAnswer": 0},
+    {"questionText": "Liquid particles?", "answers": ["Close but move", "Fixed", "Far", "None"], "correctAnswer": 0},
+    {"questionText": "Electron charge?", "answers": ["Negative", "Positive", "Neutral", "None"], "correctAnswer": 0},
+    {"questionText": "Proton charge?", "answers": ["Positive", "Negative", "Neutral", "None"], "correctAnswer": 0},
+    {"questionText": "Neutron charge?", "answers": ["Neutral", "Positive", "Negative", "None"], "correctAnswer": 0},
+    {"questionText": "Chemical reaction?", "answers": ["New substances formed", "Same substance", "Nothing", "Only heat"], "correctAnswer": 0}
+  ]
+}

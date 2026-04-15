@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Basic unit of life?", "answers": ["Cell", "Atom", "Molecule", "Organ"], "correctAnswer": 0},
+    {"questionText": "DNA carries?", "answers": ["Genetic info", "Energy", "Oxygen", "Water"], "correctAnswer": 0},
+    {"questionText": "Photosynthesis occurs in?", "answers": ["Chloroplast", "Nucleus", "Mitochondria", "Ribosome"], "correctAnswer": 0},
+    {"questionText": "Mitochondria produce?", "answers": ["Energy", "DNA", "Protein", "Oxygen"], "correctAnswer": 0},
+    {"questionText": "Heart pumps?", "answers": ["Blood", "Air", "Water", "Food"], "correctAnswer": 0},
+    {"questionText": "Respiration produces?", "answers": ["Energy", "Oxygen", "Water only", "DNA"], "correctAnswer": 0},
+    {"questionText": "Enzymes are?", "answers": ["Proteins", "Lipids", "Carbs", "DNA"], "correctAnswer": 0},
+    {"questionText": "Genes are found in?", "answers": ["DNA", "Proteins", "Lipids", "Cells only"], "correctAnswer": 0},
+    {"questionText": "Evolution means?", "answers": ["Change over time", "No change", "Instant change", "Growth"], "correctAnswer": 0},
+    {"questionText": "Natural selection?", "answers": ["Best survive", "All survive", "None survive", "Random death"], "correctAnswer": 0},
+    {"questionText": "Osmosis is?", "answers": ["Water movement", "Air flow", "Energy", "Heat"], "correctAnswer": 0},
+    {"questionText": "Diffusion is?", "answers": ["Movement high→low", "Low→high", "Random", "None"], "correctAnswer": 0},
+    {"questionText": "Human body system for transport?", "answers": ["Circulatory", "Digestive", "Respiratory", "Nervous"], "correctAnswer": 0},
+    {"questionText": "Brain controls?", "answers": ["Body", "Only heart", "Only lungs", "Nothing"], "correctAnswer": 0},
+    {"questionText": "Plants need?", "answers": ["Sunlight", "Only water", "Only air", "None"], "correctAnswer": 0},
+    {"questionText": "Food chain shows?", "answers": ["Energy flow", "Water flow", "Air flow", "Time"], "correctAnswer": 0},
+    {"questionText": "Producer is?", "answers": ["Plant", "Animal", "Human", "Bacteria"], "correctAnswer": 0},
+    {"questionText": "Consumer is?", "answers": ["Animal", "Plant", "Sun", "Water"], "correctAnswer": 0},
+    {"questionText": "Ecosystem includes?", "answers": ["Living + non-living", "Only animals", "Only plants", "Only humans"], "correctAnswer": 0},
+    {"questionText": "Homeostasis means?", "answers": ["Stable internal state", "Change", "Growth", "Movement"], "correctAnswer": 0}
+  ]
+}
