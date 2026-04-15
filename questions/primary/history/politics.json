@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Who leads a country?", "answers": ["President", "Player", "Teacher", "Driver"], "correctAnswer": 0},
+    {"questionText": "Government makes?", "answers": ["Laws", "Games", "Food", "Songs"], "correctAnswer": 0},
+    {"questionText": "A country has?", "answers": ["Leaders", "Nothing", "Only animals", "Only trees"], "correctAnswer": 0},
+    {"questionText": "People vote for?", "answers": ["Leaders", "Animals", "Food", "Games"], "correctAnswer": 0},
+    {"questionText": "Election is?", "answers": ["Choosing leaders", "Playing game", "Cooking", "Reading"], "correctAnswer": 0},
+    {"questionText": "Law is?", "answers": ["Rule", "Game", "Food", "Song"], "correctAnswer": 0},
+    {"questionText": "Government helps?", "answers": ["People", "Animals only", "Trees only", "Nothing"], "correctAnswer": 0},
+    {"questionText": "President is?", "answers": ["Leader", "Teacher", "Student", "Driver"], "correctAnswer": 0},
+    {"questionText": "Prime minister is?", "answers": ["Leader", "Player", "Cook", "Farmer"], "correctAnswer": 0},
+    {"questionText": "Politics is about?", "answers": ["Running country", "Games", "Food", "Music"], "correctAnswer": 0},
+    {"questionText": "Citizens are?", "answers": ["People of a country", "Animals", "Plants", "Objects"], "correctAnswer": 0},
+    {"questionText": "Rules help?", "answers": ["Order", "Chaos", "Nothing", "War"], "correctAnswer": 0},
+    {"questionText": "Voting is?", "answers": ["Choosing", "Eating", "Running", "Sleeping"], "correctAnswer": 0},
+    {"questionText": "Leaders decide?", "answers": ["Important things", "Nothing", "Games", "Food"], "correctAnswer": 0},
+    {"questionText": "Country needs?", "answers": ["Government", "Nothing", "Only animals", "Only trees"], "correctAnswer": 0},
+    {"questionText": "Laws must be?", "answers": ["Followed", "Ignored", "Broken", "Hidden"], "correctAnswer": 0},
+    {"questionText": "People can?", "answers": ["Vote", "Fly", "Disappear", "Sleep always"], "correctAnswer": 0},
+    {"questionText": "Government works for?", "answers": ["People", "Animals", "Trees", "Nothing"], "correctAnswer": 0},
+    {"questionText": "Politics affects?", "answers": ["Everyone", "No one", "Only leaders", "Only animals"], "correctAnswer": 0},
+    {"questionText": "A country has borders?", "answers": ["Yes", "No", "Never", "Sometimes"], "correctAnswer": 0}
+  ]
+}

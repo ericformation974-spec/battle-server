@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Ancient Egypt is known for?", "answers": ["Pyramids", "Cars", "Planes", "Phones"], "correctAnswer": 0},
+    {"questionText": "Romans built?", "answers": ["Roads", "Phones", "Cars", "Computers"], "correctAnswer": 0},
+    {"questionText": "Ancient Greece had?", "answers": ["Philosophers", "Cars", "Planes", "TV"], "correctAnswer": 0},
+    {"questionText": "Civilisation means?", "answers": ["Group of people", "Animal", "Plant", "Object"], "correctAnswer": 0},
+    {"questionText": "Egypt is in?", "answers": ["Africa", "Europe", "Asia", "America"], "correctAnswer": 0},
+    {"questionText": "Romans lived in?", "answers": ["Italy", "France", "USA", "China"], "correctAnswer": 0},
+    {"questionText": "Greek civilisation is?", "answers": ["Old", "New", "Future", "Modern"], "correctAnswer": 0},
+    {"questionText": "Pharaoh was?", "answers": ["King of Egypt", "Soldier", "Teacher", "Farmer"], "correctAnswer": 0},
+    {"questionText": "Pyramids are?", "answers": ["Buildings", "Cars", "Trees", "Boats"], "correctAnswer": 0},
+    {"questionText": "Romans used?", "answers": ["Roads", "Internet", "Phones", "TV"], "correctAnswer": 0},
+    {"questionText": "Ancient people used?", "answers": ["Tools", "Computers", "Phones", "TV"], "correctAnswer": 0},
+    {"questionText": "Civilisations built?", "answers": ["Cities", "Nothing", "Only farms", "Only roads"], "correctAnswer": 0},
+    {"questionText": "Egyptians wrote on?", "answers": ["Papyrus", "Phone", "Screen", "Plastic"], "correctAnswer": 0},
+    {"questionText": "Greek gods were?", "answers": ["Myths", "Real people", "Animals", "Plants"], "correctAnswer": 0},
+    {"questionText": "Romans had?", "answers": ["Empire", "Game", "TV", "Internet"], "correctAnswer": 0},
+    {"questionText": "Ancient cities were?", "answers": ["Old", "Modern", "Future", "Digital"], "correctAnswer": 0},
+    {"questionText": "Civilisations grow?", "answers": ["Yes", "No", "Never", "Impossible"], "correctAnswer": 0},
+    {"questionText": "People in civilisations?", "answers": ["Work together", "Stay alone", "Fight always", "Hide"], "correctAnswer": 0},
+    {"questionText": "History studies?", "answers": ["Past", "Future", "Now only", "Nothing"], "correctAnswer": 0},
+    {"questionText": "Ancient means?", "answers": ["Very old", "New", "Future", "Fast"], "correctAnswer": 0}
+  ]
+}
