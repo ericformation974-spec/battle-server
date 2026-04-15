@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Ancient Egypt known for?", "answers": ["Pyramids", "Computers", "Cars", "Planes"], "correctAnswer": 0},
+    {"questionText": "Roman Empire capital?", "answers": ["Rome", "Athens", "Paris", "Berlin"], "correctAnswer": 0},
+    {"questionText": "Greek philosophy influenced?", "answers": ["Western thought", "Asia only", "Africa only", "None"], "correctAnswer": 0},
+    {"questionText": "Feudal system based on?", "answers": ["Land & loyalty", "Money", "Trade", "War"], "correctAnswer": 0},
+    {"questionText": "Renaissance means?", "answers": ["Rebirth", "War", "Empire", "Trade"], "correctAnswer": 0},
+    {"questionText": "Industrial Revolution started in?", "answers": ["UK", "France", "USA", "Germany"], "correctAnswer": 0},
+    {"questionText": "Ancient Rome used?", "answers": ["Latin", "Greek", "English", "French"], "correctAnswer": 0},
+    {"questionText": "Mesopotamia located in?", "answers": ["Middle East", "Europe", "Africa", "Asia"], "correctAnswer": 0},
+    {"questionText": "Writing system of Egypt?", "answers": ["Hieroglyphs", "Alphabet", "Numbers", "Symbols only"], "correctAnswer": 0},
+    {"questionText": "Empire means?", "answers": ["Large controlled territory", "Small village", "City", "Island"], "correctAnswer": 0},
+    {"questionText": "Civilisations develop?", "answers": ["Cities & culture", "Nothing", "Only farms", "Only war"], "correctAnswer": 0},
+    {"questionText": "Trade helped?", "answers": ["Growth", "Destruction", "War", "Isolation"], "correctAnswer": 0},
+    {"questionText": "Middle Ages after?", "answers": ["Fall of Rome", "WWI", "WWII", "Cold War"], "correctAnswer": 0},
+    {"questionText": "Printing press invented by?", "answers": ["Gutenberg", "Newton", "Einstein", "Galileo"], "correctAnswer": 0},
+    {"questionText": "Civilisations collapse due to?", "answers": ["War or crisis", "Games", "Food", "Music"], "correctAnswer": 0},
+    {"questionText": "Greek democracy started in?", "answers": ["Athens", "Rome", "Paris", "Berlin"], "correctAnswer": 0},
+    {"questionText": "Ancient China inventions?", "answers": ["Paper & gunpowder", "Cars", "Phones", "TV"], "correctAnswer": 0},
+    {"questionText": "Agriculture allowed?", "answers": ["Settlements", "War only", "Migration", "Nothing"], "correctAnswer": 0},
+    {"questionText": "Civilisation includes?", "answers": ["Government & culture", "Only people", "Only land", "Only war"], "correctAnswer": 0},
+    {"questionText": "History studies?", "answers": ["Past societies", "Future", "Only present", "None"], "correctAnswer": 0}
+  ]
+}

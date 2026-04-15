@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Democracy means?", "answers": ["People rule", "King rules", "Army rules", "No rules"], "correctAnswer": 0},
+    {"questionText": "Dictatorship?", "answers": ["One leader controls", "People vote", "No leader", "Multiple leaders"], "correctAnswer": 0},
+    {"questionText": "Election purpose?", "answers": ["Choose leaders", "Make laws", "Start war", "Trade"], "correctAnswer": 0},
+    {"questionText": "Constitution defines?", "answers": ["Basic laws", "War rules", "Trade", "Economy"], "correctAnswer": 0},
+    {"questionText": "Separation of powers?", "answers": ["Divide government roles", "Unite power", "No government", "War system"], "correctAnswer": 0},
+    {"questionText": "Executive branch?", "answers": ["Enforces laws", "Creates laws", "Judges laws", "Ignores laws"], "correctAnswer": 0},
+    {"questionText": "Legislative branch?", "answers": ["Makes laws", "Enforces", "Judges", "None"], "correctAnswer": 0},
+    {"questionText": "Judicial branch?", "answers": ["Interprets laws", "Makes laws", "Enforces", "None"], "correctAnswer": 0},
+    {"questionText": "Citizen rights include?", "answers": ["Freedom", "Weapons only", "Money", "Land"], "correctAnswer": 0},
+    {"questionText": "Taxes used for?", "answers": ["Public services", "Games", "Private use", "Nothing"], "correctAnswer": 0},
+    {"questionText": "Parliament is?", "answers": ["Law-making body", "Army", "School", "Company"], "correctAnswer": 0},
+    {"questionText": "Monarchy ruled by?", "answers": ["King/Queen", "People", "Army", "President"], "correctAnswer": 0},
+    {"questionText": "Republic has?", "answers": ["Elected leader", "King", "No leader", "Army rule"], "correctAnswer": 0},
+    {"questionText": "Human rights are?", "answers": ["Basic freedoms", "Laws only", "Money", "Weapons"], "correctAnswer": 0},
+    {"questionText": "Political parties?", "answers": ["Groups with ideas", "Armies", "Countries", "Schools"], "correctAnswer": 0},
+    {"questionText": "Campaign means?", "answers": ["Promote candidate", "War", "Law", "Trade"], "correctAnswer": 0},
+    {"questionText": "Freedom of speech?", "answers": ["Express opinions", "Stay silent", "Only leaders speak", "No speech"], "correctAnswer": 0},
+    {"questionText": "Global politics studies?", "answers": ["Relations between countries", "Animals", "Weather", "Food"], "correctAnswer": 0},
+    {"questionText": "Law ensures?", "answers": ["Order", "Chaos", "War", "Silence"], "correctAnswer": 0},
+    {"questionText": "Government role?", "answers": ["Manage country", "Play games", "Cook food", "None"], "correctAnswer": 0}
+  ]
+}
