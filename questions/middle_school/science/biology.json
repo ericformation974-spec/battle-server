@@ -1,0 +1,104 @@
+{
+  "questions": [
+    {
+      "questionText": "What is the basic unit of life?",
+      "answers": ["Cell", "Atom", "Molecule", "Tissue"],
+      "correctAnswer": 0
+    },
+    {
+      "questionText": "Which organ pumps blood through the body?",
+      "answers": ["Lungs", "Brain", "Heart", "Liver"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "Which system helps us breathe?",
+      "answers": ["Digestive system", "Respiratory system", "Nervous system", "Skeletal system"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Plants make their own food using?",
+      "answers": ["Photosynthesis", "Respiration", "Digestion", "Fermentation"],
+      "correctAnswer": 0
+    },
+    {
+      "questionText": "What gas do plants absorb from the air?",
+      "answers": ["Oxygen", "Hydrogen", "Carbon dioxide", "Nitrogen"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "What gas do humans need to breathe?",
+      "answers": ["Carbon dioxide", "Oxygen", "Helium", "Nitrogen"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Which part of the plant absorbs water from the soil?",
+      "answers": ["Leaf", "Stem", "Flower", "Root"],
+      "correctAnswer": 3
+    },
+    {
+      "questionText": "Which part of the plant usually makes seeds?",
+      "answers": ["Root", "Flower", "Stem", "Leaf"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Animals that eat only plants are called?",
+      "answers": ["Carnivores", "Herbivores", "Omnivores", "Predators"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Animals that eat only meat are called?",
+      "answers": ["Herbivores", "Omnivores", "Carnivores", "Insects"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "Animals that eat both plants and meat are called?",
+      "answers": ["Herbivores", "Omnivores", "Carnivores", "Scavengers"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Which organ helps us think?",
+      "answers": ["Heart", "Stomach", "Brain", "Lung"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "Which body system includes bones?",
+      "answers": ["Muscular system", "Skeletal system", "Digestive system", "Respiratory system"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Which organ helps digest food?",
+      "answers": ["Heart", "Brain", "Stomach", "Lung"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "Blood carries oxygen around the body. True or false?",
+      "answers": ["True", "False", "Only in plants", "Only in fish"],
+      "correctAnswer": 0
+    },
+    {
+      "questionText": "Which sense organ is used for hearing?",
+      "answers": ["Eye", "Ear", "Nose", "Tongue"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Which sense organ is used for smell?",
+      "answers": ["Tongue", "Ear", "Nose", "Eye"],
+      "correctAnswer": 2
+    },
+    {
+      "questionText": "What do food chains show?",
+      "answers": ["How animals sleep", "How living things get energy", "How rocks form", "How planets move"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "A habitat is?",
+      "answers": ["A type of animal", "A place where an organism lives", "A body organ", "A type of food"],
+      "correctAnswer": 1
+    },
+    {
+      "questionText": "Living things grow and change. True or false?",
+      "answers": ["True", "False", "Only plants", "Only animals"],
+      "correctAnswer": 0
+    }
+  ]
+}
