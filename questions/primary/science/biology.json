@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Humans have how many eyes?", "answers": ["1", "2", "3", "4"], "correctAnswer": 1},
+    {"questionText": "Which organ pumps blood?", "answers": ["Heart", "Brain", "Lungs", "Stomach"], "correctAnswer": 0},
+    {"questionText": "We breathe with?", "answers": ["Lungs", "Heart", "Brain", "Legs"], "correctAnswer": 0},
+    {"questionText": "Plants need?", "answers": ["Water", "Metal", "Plastic", "Fire"], "correctAnswer": 0},
+    {"questionText": "Animals need food?", "answers": ["Yes", "No", "Never", "Maybe"], "correctAnswer": 0},
+    {"questionText": "Humans are?", "answers": ["Animals", "Plants", "Rocks", "Water"], "correctAnswer": 0},
+    {"questionText": "Plants make?", "answers": ["Oxygen", "Plastic", "Metal", "Stone"], "correctAnswer": 0},
+    {"questionText": "We see with?", "answers": ["Eyes", "Ears", "Hands", "Feet"], "correctAnswer": 0},
+    {"questionText": "We hear with?", "answers": ["Ears", "Eyes", "Nose", "Hands"], "correctAnswer": 0},
+    {"questionText": "We smell with?", "answers": ["Nose", "Eyes", "Ears", "Hands"], "correctAnswer": 0},
+    {"questionText": "Fish live in?", "answers": ["Water", "Air", "Fire", "Land"], "correctAnswer": 0},
+    {"questionText": "Birds can?", "answers": ["Fly", "Swim", "Dig", "Jump only"], "correctAnswer": 0},
+    {"questionText": "Dogs are?", "answers": ["Animals", "Plants", "Objects", "Rocks"], "correctAnswer": 0},
+    {"questionText": "Trees are?", "answers": ["Plants", "Animals", "Rocks", "Water"], "correctAnswer": 0},
+    {"questionText": "We need air?", "answers": ["Yes", "No", "Never", "Maybe"], "correctAnswer": 0},
+    {"questionText": "The brain helps?", "answers": ["Think", "Run", "Eat", "Sleep"], "correctAnswer": 0},
+    {"questionText": "The stomach helps?", "answers": ["Digest", "See", "Hear", "Walk"], "correctAnswer": 0},
+    {"questionText": "Humans have bones?", "answers": ["Yes", "No", "Never", "Sometimes"], "correctAnswer": 0},
+    {"questionText": "Babies grow?", "answers": ["Yes", "No", "Never", "Maybe"], "correctAnswer": 0},
+    {"questionText": "All living things?", "answers": ["Grow", "Stop", "Freeze", "Break"], "correctAnswer": 0}
+  ]
+}

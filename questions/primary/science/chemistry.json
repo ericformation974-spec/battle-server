@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Water is made of?", "answers": ["H2O", "CO2", "O2", "NaCl"], "correctAnswer": 0},
+    {"questionText": "Air is a?", "answers": ["Gas", "Liquid", "Solid", "Metal"], "correctAnswer": 0},
+    {"questionText": "Ice is?", "answers": ["Solid", "Liquid", "Gas", "Energy"], "correctAnswer": 0},
+    {"questionText": "Water is?", "answers": ["Liquid", "Gas", "Solid", "Stone"], "correctAnswer": 0},
+    {"questionText": "Steam is?", "answers": ["Gas", "Liquid", "Solid", "Metal"], "correctAnswer": 0},
+    {"questionText": "Salt tastes?", "answers": ["Salty", "Sweet", "Sour", "Bitter"], "correctAnswer": 0},
+    {"questionText": "Sugar tastes?", "answers": ["Sweet", "Salty", "Sour", "Bitter"], "correctAnswer": 0},
+    {"questionText": "Fire is hot?", "answers": ["Yes", "No", "Cold", "Warm"], "correctAnswer": 0},
+    {"questionText": "Water freezes at?", "answers": ["0°C", "100°C", "50°C", "10°C"], "correctAnswer": 0},
+    {"questionText": "Water boils at?", "answers": ["100°C", "0°C", "10°C", "50°C"], "correctAnswer": 0},
+    {"questionText": "A rock is?", "answers": ["Solid", "Liquid", "Gas", "Energy"], "correctAnswer": 0},
+    {"questionText": "Milk is?", "answers": ["Liquid", "Solid", "Gas", "Fire"], "correctAnswer": 0},
+    {"questionText": "Air cannot be?", "answers": ["Seen", "Felt", "Used", "Breathed"], "correctAnswer": 0},
+    {"questionText": "Water can change state?", "answers": ["Yes", "No", "Never", "Impossible"], "correctAnswer": 0},
+    {"questionText": "Ice melts?", "answers": ["Yes", "No", "Never", "Maybe"], "correctAnswer": 0},
+    {"questionText": "Steam comes from?", "answers": ["Boiling water", "Ice", "Rock", "Metal"], "correctAnswer": 0},
+    {"questionText": "Matter has?", "answers": ["Mass", "Color", "Sound", "Light"], "correctAnswer": 0},
+    {"questionText": "Liquid takes shape of?", "answers": ["Container", "Air", "Light", "Space"], "correctAnswer": 0},
+    {"questionText": "Gas spreads?", "answers": ["Yes", "No", "Never", "Sometimes"], "correctAnswer": 0},
+    {"questionText": "Solid keeps shape?", "answers": ["Yes", "No", "Sometimes", "Never"], "correctAnswer": 0}
+  ]
+}
