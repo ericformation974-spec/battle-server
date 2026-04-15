@@ -1,0 +1,23 @@
+{
+  "questions": [
+    {"questionText": "Solve: 2x + 4 = 10", "answers": ["2", "3", "4", "5"], "correctAnswer": 1},
+    {"questionText": "Solve: 3x = 12", "answers": ["2", "3", "4", "5"], "correctAnswer": 2},
+    {"questionText": "Solve: x² = 16", "answers": ["±4", "4", "8", "16"], "correctAnswer": 0},
+    {"questionText": "Derivative of x²?", "answers": ["2x", "x", "x²", "1"], "correctAnswer": 0},
+    {"questionText": "5² = ?", "answers": ["10", "20", "25", "30"], "correctAnswer": 2},
+    {"questionText": "√49 = ?", "answers": ["6", "7", "8", "9"], "correctAnswer": 1},
+    {"questionText": "Solve: 4x - 8 = 0", "answers": ["1", "2", "3", "4"], "correctAnswer": 1},
+    {"questionText": "2³ = ?", "answers": ["6", "8", "9", "12"], "correctAnswer": 1},
+    {"questionText": "Factor: x² - 9", "answers": ["(x-3)(x+3)", "(x-9)", "(x+9)", "(x²+9)"], "correctAnswer": 0},
+    {"questionText": "10% of 200?", "answers": ["10", "20", "30", "40"], "correctAnswer": 1},
+    {"questionText": "Slope of y = 2x + 3?", "answers": ["2", "3", "1", "0"], "correctAnswer": 0},
+    {"questionText": "Solve: x + 5 = 9", "answers": ["3", "4", "5", "6"], "correctAnswer": 1},
+    {"questionText": "x³ derivative?", "answers": ["3x²", "x²", "3x", "x³"], "correctAnswer": 0},
+    {"questionText": "Solve: 2x² = 18", "answers": ["±3", "±9", "3", "9"], "correctAnswer": 0},
+    {"questionText": "Log10(100) = ?", "answers": ["1", "2", "3", "10"], "correctAnswer": 1},
+    {"questionText": "x⁰ = ?", "answers": ["0", "1", "x", "Undefined"], "correctAnswer": 1},
+    {"questionText": "Expand: (x+2)(x+3)", "answers": ["x²+5x+6", "x²+6x+5", "x²+5", "x²+6"], "correctAnswer": 0},
+    {"questionText": "Solve: x/2 = 5", "answers": ["5", "10", "2", "7"], "correctAnswer": 1},
+    {"questionText": "Square root of 121?", "answers": ["10", "11", "12", "13"], "correctAnswer": 1},
+    {"questionText": "Derivative of constant?", "answers": ["0", "1", "x", "∞"], "correctAnswer": 0}
+  ]
