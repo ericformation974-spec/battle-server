@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Largest ocean?", "answers": ["Pacific", "Atlantic", "Indian", "Arctic"], "correctAnswer": 0},
+    {"questionText": "Deepest ocean trench?", "answers": ["Mariana Trench", "Atlantic Ridge", "Java Trench", "Tonga Trench"], "correctAnswer": 0},
+    {"questionText": "Ocean currents affect?", "answers": ["Climate", "Mountains", "Volcanoes", "Forests"], "correctAnswer": 0},
+    {"questionText": "El Niño affects?", "answers": ["Weather patterns", "Mountains", "Forests", "Cities"], "correctAnswer": 0},
+    {"questionText": "Salinity refers to?", "answers": ["Salt content", "Temperature", "Depth", "Pressure"], "correctAnswer": 0},
+    {"questionText": "Tides caused by?", "answers": ["Moon gravity", "Wind", "Sun heat", "Earth spin"], "correctAnswer": 0},
+    {"questionText": "Largest coral reef?", "answers": ["Great Barrier Reef", "Red Sea Reef", "Caribbean Reef", "Pacific Reef"], "correctAnswer": 0},
+    {"questionText": "Ocean zones based on?", "answers": ["Depth", "Temperature only", "Salinity only", "Waves"], "correctAnswer": 0},
+    {"questionText": "Upwelling brings?", "answers": ["Nutrients", "Heat", "Pollution", "Sand"], "correctAnswer": 0},
+    {"questionText": "Thermohaline circulation driven by?", "answers": ["Temperature & salinity", "Wind", "Waves", "Sun"], "correctAnswer": 0},
+    {"questionText": "Ocean absorbs?", "answers": ["CO2", "Oxygen", "Nitrogen", "Hydrogen"], "correctAnswer": 0},
+    {"questionText": "Continental shelf is?", "answers": ["Shallow area", "Deep ocean", "Mountain", "Trench"], "correctAnswer": 0},
+    {"questionText": "Sea level rise caused by?", "answers": ["Climate change", "Earthquakes", "Wind", "Rain"], "correctAnswer": 0},
+    {"questionText": "Ocean pressure increases with?", "answers": ["Depth", "Temperature", "Light", "Waves"], "correctAnswer": 0},
+    {"questionText": "Phytoplankton produce?", "answers": ["Oxygen", "CO2", "Heat", "Salt"], "correctAnswer": 0},
+    {"questionText": "Marine ecosystems depend on?", "answers": ["Sunlight", "Mountains", "Rivers", "Cities"], "correctAnswer": 0},
+    {"questionText": "Sea currents move?", "answers": ["Heat", "Land", "Air", "Rocks"], "correctAnswer": 0},
+    {"questionText": "Ocean acidification due to?", "answers": ["CO2 increase", "Oxygen", "Heat", "Salt"], "correctAnswer": 0},
+    {"questionText": "Largest sea?", "answers": ["Philippine Sea", "Mediterranean", "Baltic", "Red Sea"], "correctAnswer": 0},
+    {"questionText": "Waves caused by?", "answers": ["Wind", "Moon", "Earthquake only", "Sun"], "correctAnswer": 0}
+  ]
+}
