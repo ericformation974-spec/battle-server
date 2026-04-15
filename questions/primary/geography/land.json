@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Largest continent?", "answers": ["Asia", "Europe", "Africa", "America"], "correctAnswer": 0},
+    {"questionText": "Sahara is a?", "answers": ["Desert", "Forest", "Ocean", "Mountain"], "correctAnswer": 0},
+    {"questionText": "Mountains are?", "answers": ["High land", "Water", "Air", "Fire"], "correctAnswer": 0},
+    {"questionText": "Forest has?", "answers": ["Trees", "Water", "Sand", "Ice"], "correctAnswer": 0},
+    {"questionText": "River flows?", "answers": ["Water", "Sand", "Air", "Fire"], "correctAnswer": 0},
+    {"questionText": "Valley is?", "answers": ["Low land", "High land", "Water", "Sky"], "correctAnswer": 0},
+    {"questionText": "Hill is?", "answers": ["Small mountain", "Ocean", "Desert", "Forest"], "correctAnswer": 0},
+    {"questionText": "Desert is?", "answers": ["Dry land", "Wet land", "Ocean", "Forest"], "correctAnswer": 0},
+    {"questionText": "Grass grows on?", "answers": ["Land", "Water", "Air", "Fire"], "correctAnswer": 0},
+    {"questionText": "Earth surface is?", "answers": ["Land and water", "Only water", "Only land", "Air"], "correctAnswer": 0},
+    {"questionText": "Volcano erupts?", "answers": ["Yes", "No", "Never", "Maybe"], "correctAnswer": 0},
+    {"questionText": "Soil is?", "answers": ["Earth", "Water", "Air", "Fire"], "correctAnswer": 0},
+    {"questionText": "Plants grow in?", "answers": ["Soil", "Air", "Water only", "Fire"], "correctAnswer": 0},
+    {"questionText": "Animals live on?", "answers": ["Land", "Air", "Water only", "Fire"], "correctAnswer": 0},
+    {"questionText": "City is?", "answers": ["Human area", "Ocean", "Forest", "Desert"], "correctAnswer": 0},
+    {"questionText": "Road is on?", "answers": ["Land", "Water", "Air", "Sky"], "correctAnswer": 0},
+    {"questionText": "Bridge crosses?", "answers": ["Land/Water", "Sky", "Fire", "Air"], "correctAnswer": 0},
+    {"questionText": "Island is?", "answers": ["Land in water", "Water in land", "Air", "Fire"], "correctAnswer": 0},
+    {"questionText": "Continent is?", "answers": ["Large land", "Small land", "Water", "Air"], "correctAnswer": 0},
+    {"questionText": "Earth is?", "answers": ["Planet", "Star", "Moon", "Sun"], "correctAnswer": 0}
+  ]
+}

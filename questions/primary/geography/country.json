@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Capital of France?", "answers": ["Paris", "London", "Rome", "Madrid"], "correctAnswer": 0},
+    {"questionText": "Capital of UK?", "answers": ["London", "Paris", "Berlin", "Rome"], "correctAnswer": 0},
+    {"questionText": "Capital of Italy?", "answers": ["Rome", "Paris", "London", "Madrid"], "correctAnswer": 0},
+    {"questionText": "USA capital?", "answers": ["Washington", "New York", "LA", "Chicago"], "correctAnswer": 0},
+    {"questionText": "Japan capital?", "answers": ["Tokyo", "Seoul", "Beijing", "Bangkok"], "correctAnswer": 0},
+    {"questionText": "Spain capital?", "answers": ["Madrid", "Barcelona", "Lisbon", "Rome"], "correctAnswer": 0},
+    {"questionText": "Germany capital?", "answers": ["Berlin", "Munich", "Hamburg", "Paris"], "correctAnswer": 0},
+    {"questionText": "Canada capital?", "answers": ["Ottawa", "Toronto", "Vancouver", "Montreal"], "correctAnswer": 0},
+    {"questionText": "Brazil capital?", "answers": ["Brasilia", "Rio", "Sao Paulo", "Lima"], "correctAnswer": 0},
+    {"questionText": "China capital?", "answers": ["Beijing", "Shanghai", "Tokyo", "Seoul"], "correctAnswer": 0},
+    {"questionText": "India capital?", "answers": ["New Delhi", "Mumbai", "Delhi", "Chennai"], "correctAnswer": 0},
+    {"questionText": "Russia capital?", "answers": ["Moscow", "Paris", "Berlin", "Rome"], "correctAnswer": 0},
+    {"questionText": "Australia capital?", "answers": ["Canberra", "Sydney", "Melbourne", "Perth"], "correctAnswer": 0},
+    {"questionText": "Egypt capital?", "answers": ["Cairo", "Rome", "Paris", "Dubai"], "correctAnswer": 0},
+    {"questionText": "Mexico capital?", "answers": ["Mexico City", "Cancun", "Lima", "Bogota"], "correctAnswer": 0},
+    {"questionText": "Argentina capital?", "answers": ["Buenos Aires", "Lima", "Quito", "Santiago"], "correctAnswer": 0},
+    {"questionText": "South Africa capital?", "answers": ["Pretoria", "Cape Town", "Johannesburg", "Nairobi"], "correctAnswer": 0},
+    {"questionText": "Norway capital?", "answers": ["Oslo", "Stockholm", "Helsinki", "Copenhagen"], "correctAnswer": 0},
+    {"questionText": "Sweden capital?", "answers": ["Stockholm", "Oslo", "Helsinki", "Copenhagen"], "correctAnswer": 0},
+    {"questionText": "Finland capital?", "answers": ["Helsinki", "Oslo", "Stockholm", "Copenhagen"], "correctAnswer": 0}
+  ]
+}
