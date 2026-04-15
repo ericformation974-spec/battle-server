@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Plural de 'niño'?", "answers": ["niños", "niñes", "niñoss", "niñ"], "correctAnswer": 0},
+    {"questionText": "Futuro de 'ir'?", "answers": ["voy", "iré", "ido", "iba"], "correctAnswer": 1},
+    {"questionText": "Sinónimo de 'feliz'?", "answers": ["triste", "contento", "lento", "rápido"], "correctAnswer": 1},
+    {"questionText": "Antónimo de 'alto'?", "answers": ["bajo", "grande", "largo", "ancho"], "correctAnswer": 0},
+    {"questionText": "Artículo correcto: ___ escuela", "answers": ["el", "la", "una", "un"], "correctAnswer": 1},
+    {"questionText": "Pasado de 'tener'?", "answers": ["tenía", "tuve", "tengo", "tener"], "correctAnswer": 1},
+    {"questionText": "Verbo en frase?", "answers": ["perro", "come", "rápido", "azul"], "correctAnswer": 1},
+    {"questionText": "Sustantivo?", "answers": ["correr", "perro", "rápido", "azul"], "correctAnswer": 1},
+    {"questionText": "Adjetivo?", "answers": ["grande", "correr", "perro", "rápido"], "correctAnswer": 0},
+    {"questionText": "Adverbio?", "answers": ["rápidamente", "perro", "azul", "correr"], "correctAnswer": 0},
+    {"questionText": "Femenino de 'actor'?", "answers": ["actora", "actriz", "actor", "actore"], "correctAnswer": 1},
+    {"questionText": "Plural de 'animal'?", "answers": ["animales", "animalos", "animal", "animaleses"], "correctAnswer": 0},
+    {"questionText": "Sinónimo de 'rápido'?", "answers": ["lento", "veloz", "grande", "bajo"], "correctAnswer": 1},
+    {"questionText": "Antónimo de 'fácil'?", "answers": ["simple", "difícil", "rápido", "corto"], "correctAnswer": 1},
+    {"questionText": "Presente de 'ser' (yo)?", "answers": ["soy", "eres", "es", "somos"], "correctAnswer": 0},
+    {"questionText": "Frase correcta?", "answers": ["Yo como manzana", "Yo manzana como", "Como yo manzana", "Manzana yo como"], "correctAnswer": 0},
+    {"questionText": "Conjunción?", "answers": ["y", "perro", "comer", "rápido"], "correctAnswer": 0},
+    {"questionText": "Tiempo pasado?", "answers": ["pretérito", "presente", "futuro", "imperativo"], "correctAnswer": 0},
+    {"questionText": "¿Qué significa 'porque'?", "answers": ["razón", "lugar", "tiempo", "pregunta"], "correctAnswer": 0},
+    {"questionText": "Pregunta correcta?", "answers": ["¿Te gusta?", "Te gusta?", "Gusta te?", "Te gusta es?"], "correctAnswer": 0}
+  ]
+}

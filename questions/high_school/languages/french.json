@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "Plural de 'cheval' ?", "answers": ["chevals", "chevaux", "chevales", "cheval"], "correctAnswer": 1},
+    {"questionText": "Futur de 'aller' ?", "answers": ["vais", "irai", "allé", "aller"], "correctAnswer": 1},
+    {"questionText": "Synonyme de 'rapide' ?", "answers": ["lent", "vite", "grand", "petit"], "correctAnswer": 1},
+    {"questionText": "Antonyme de 'grand' ?", "answers": ["haut", "petit", "long", "large"], "correctAnswer": 1},
+    {"questionText": "Genre de 'table' ?", "answers": ["masculin", "féminin", "neutre", "aucun"], "correctAnswer": 1},
+    {"questionText": "Article correct: ___ école", "answers": ["le", "la", "l’", "un"], "correctAnswer": 2},
+    {"questionText": "Passé de 'avoir' ?", "answers": ["ai", "avais", "eu", "avoir"], "correctAnswer": 2},
+    {"questionText": "Verbe dans la phrase ?", "answers": ["chat", "mange", "bleu", "vite"], "correctAnswer": 1},
+    {"questionText": "Nom dans la phrase ?", "answers": ["courir", "chien", "vite", "bleu"], "correctAnswer": 1},
+    {"questionText": "Adjectif ?", "answers": ["grand", "manger", "chien", "vite"], "correctAnswer": 0},
+    {"questionText": "Adverbe ?", "answers": ["vite", "chien", "bleu", "manger"], "correctAnswer": 0},
+    {"questionText": "Féminin de 'acteur' ?", "answers": ["actrice", "acteuse", "acteure", "acteur"], "correctAnswer": 0},
+    {"questionText": "Pluriel de 'animal' ?", "answers": ["animals", "animaux", "animales", "animal"], "correctAnswer": 1},
+    {"questionText": "Synonyme de 'heureux' ?", "answers": ["triste", "content", "fatigué", "fâché"], "correctAnswer": 1},
+    {"questionText": "Antonyme de 'facile' ?", "answers": ["simple", "dur", "rapide", "court"], "correctAnswer": 1},
+    {"questionText": "Présent de 'être' (je) ?", "answers": ["es", "suis", "est", "sommes"], "correctAnswer": 1},
+    {"questionText": "Complément dans phrase ?", "answers": ["objet", "verbe", "sujet", "nom"], "correctAnswer": 0},
+    {"questionText": "Phrase correcte ?", "answers": ["Je mange pomme", "Je mange une pomme", "Je mange pomme une", "Mange je pomme"], "correctAnswer": 1},
+    {"questionText": "Conjonction ?", "answers": ["et", "chien", "manger", "vite"], "correctAnswer": 0},
+    {"questionText": "Temps passé ?", "answers": ["présent", "passé composé", "futur", "impératif"], "correctAnswer": 1}
+  ]
+}
