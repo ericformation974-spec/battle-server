@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "1 + 1 = ?", "answers": ["1", "2", "3", "4"], "correctAnswer": 1},
+    {"questionText": "2 + 3 = ?", "answers": ["4", "5", "6", "7"], "correctAnswer": 1},
+    {"questionText": "5 - 2 = ?", "answers": ["2", "3", "4", "5"], "correctAnswer": 1},
+    {"questionText": "3 + 4 = ?", "answers": ["6", "7", "8", "9"], "correctAnswer": 1},
+    {"questionText": "6 - 1 = ?", "answers": ["4", "5", "6", "7"], "correctAnswer": 1},
+    {"questionText": "2 × 2 = ?", "answers": ["2", "3", "4", "5"], "correctAnswer": 2},
+    {"questionText": "3 × 2 = ?", "answers": ["5", "6", "7", "8"], "correctAnswer": 1},
+    {"questionText": "10 - 5 = ?", "answers": ["4", "5", "6", "7"], "correctAnswer": 1},
+    {"questionText": "4 + 4 = ?", "answers": ["6", "7", "8", "9"], "correctAnswer": 2},
+    {"questionText": "9 - 3 = ?", "answers": ["5", "6", "7", "8"], "correctAnswer": 1},
+    {"questionText": "1 + 5 = ?", "answers": ["5", "6", "7", "8"], "correctAnswer": 1},
+    {"questionText": "7 - 2 = ?", "answers": ["4", "5", "6", "7"], "correctAnswer": 1},
+    {"questionText": "2 × 3 = ?", "answers": ["5", "6", "7", "8"], "correctAnswer": 1},
+    {"questionText": "8 - 4 = ?", "answers": ["3", "4", "5", "6"], "correctAnswer": 1},
+    {"questionText": "6 + 2 = ?", "answers": ["7", "8", "9", "10"], "correctAnswer": 1},
+    {"questionText": "3 + 3 = ?", "answers": ["5", "6", "7", "8"], "correctAnswer": 1},
+    {"questionText": "5 + 5 = ?", "answers": ["8", "9", "10", "11"], "correctAnswer": 2},
+    {"questionText": "10 - 2 = ?", "answers": ["6", "7", "8", "9"], "correctAnswer": 2},
+    {"questionText": "4 × 2 = ?", "answers": ["6", "7", "8", "9"], "correctAnswer": 2},
+    {"questionText": "9 - 1 = ?", "answers": ["7", "8", "9", "10"], "correctAnswer": 1}
+  ]
+}
