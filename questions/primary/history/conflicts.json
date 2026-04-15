@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"questionText": "What is a war?", "answers": ["A fight between countries", "A game", "A party", "A school"], "correctAnswer": 0},
+    {"questionText": "WW1 started in?", "answers": ["1914", "1939", "1800", "2000"], "correctAnswer": 0},
+    {"questionText": "WW2 started in?", "answers": ["1939", "1914", "2000", "1800"], "correctAnswer": 0},
+    {"questionText": "Soldiers fight in?", "answers": ["War", "School", "Market", "Park"], "correctAnswer": 0},
+    {"questionText": "Peace means?", "answers": ["No war", "Fight", "Game", "Noise"], "correctAnswer": 0},
+    {"questionText": "A battle is?", "answers": ["A fight", "A game", "A class", "A trip"], "correctAnswer": 0},
+    {"questionText": "Countries can have?", "answers": ["Conflicts", "Games", "Songs", "Books"], "correctAnswer": 0},
+    {"questionText": "War ends with?", "answers": ["Peace", "More war", "Nothing", "Food"], "correctAnswer": 0},
+    {"questionText": "Army protects?", "answers": ["Country", "Food", "Games", "Books"], "correctAnswer": 0},
+    {"questionText": "Weapons are used in?", "answers": ["War", "School", "Park", "Game"], "correctAnswer": 0},
+    {"questionText": "Conflict means?", "answers": ["Disagreement", "Agreement", "Friendship", "Game"], "correctAnswer": 0},
+    {"questionText": "Soldiers wear?", "answers": ["Uniform", "Pajamas", "Swimsuit", "Hat only"], "correctAnswer": 0},
+    {"questionText": "Peace is good?", "answers": ["Yes", "No", "Maybe", "Never"], "correctAnswer": 0},
+    {"questionText": "War is dangerous?", "answers": ["Yes", "No", "Safe", "Fun"], "correctAnswer": 0},
+    {"questionText": "Countries try to avoid?", "answers": ["War", "Peace", "School", "Food"], "correctAnswer": 0},
+    {"questionText": "Allies are?", "answers": ["Friends in war", "Enemies", "Teachers", "Players"], "correctAnswer": 0},
+    {"questionText": "Enemies are?", "answers": ["Opponents", "Friends", "Teachers", "Players"], "correctAnswer": 0},
+    {"questionText": "War affects?", "answers": ["People", "Nothing", "Only animals", "Only land"], "correctAnswer": 0},
+    {"questionText": "Peace helps?", "answers": ["People live better", "War continue", "Nothing", "Conflict"], "correctAnswer": 0},
+    {"questionText": "War happens between?", "answers": ["Countries", "Trees", "Animals", "Books"], "correctAnswer": 0}
+  ]
+}
