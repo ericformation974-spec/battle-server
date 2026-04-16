@@ -785,10 +785,10 @@ function createRoom(ws, selectedTeam, options = {}) {
   return room;
 }
 
-function handleFindWorldBattle(ws) {
-  const schoolLevel = "middle_school";
-  const subject = "math";
-  const subtopic = "calcul";
+function handleFindWorldBattle(ws, data) {
+  const schoolLevel = safeSchoolLevel(data.schoolLevel);
+  const subject = safeSubject(data.subject);
+  const subtopic = safeSubtopic(subject, data.subtopic);
 
   let selectedQuestions;
   try {
@@ -858,18 +858,18 @@ function handleFindWorldBattle(ws) {
     type: "BATTLE_READY",
     yourTeam: "France",
     opponentTeam: "Brazil",
-    schoolLevel,
-    subject,
-    subtopic
+    schoolLevel: room.schoolLevel,
+    subject: room.subject,
+    subtopic: room.subtopic
   });
 
   send(room.players.B.ws, {
     type: "BATTLE_READY",
     yourTeam: "Brazil",
     opponentTeam: "France",
-    schoolLevel,
-    subject,
-    subtopic
+    schoolLevel: room.schoolLevel,
+    subject: room.subject,
+    subtopic: room.subtopic
   });
 
   waitingWorldPlayer = null;
@@ -1085,7 +1085,7 @@ wss.on("connection", (ws) => {
       }
 
       if (data.type === "FIND_WORLD_BATTLE") {
-        handleFindWorldBattle(ws);
+        handleFindWorldBattle(ws, data);
         return;
       }
 
