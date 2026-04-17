@@ -274,10 +274,10 @@ function getIdleVideoForShooter(room, shooterId) {
   const shooterTeam = getShooterTeam(room, shooterId);
 
   if (shooterTeam === "France") {
-    return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 5);
+    return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 7);
   }
 
-  return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 5);
+  return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 7);
 }
 
 function getPenaltyVideoForShooter(room, shooterId, goalScored) {
@@ -285,8 +285,8 @@ function getPenaltyVideoForShooter(room, shooterId, goalScored) {
 
   if (shooterTeam === "France") {
     return goalScored
-      ? getRandomVideoPath(VIDEO_PATHS.F_YES, 10)
-      : getRandomVideoPath(VIDEO_PATHS.F_NO, 10);
+      ? getRandomVideoPath(VIDEO_PATHS.F_YES, 11)
+      : getRandomVideoPath(VIDEO_PATHS.F_NO, 11);
   }
 
   return goalScored
