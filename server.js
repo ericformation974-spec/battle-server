@@ -503,7 +503,7 @@ function scheduleSoloBotAnswer(room) {
         playerId: botId
       });
 
-      log(`BOT ANSWER [${room.botDifficulty}] -> ${botId} | answer=${botAnswer} | time=${responseTime}`);
+      log(`BOT ANSWER [${room.botDifficulty}] -> ${botId} | answer=${botAnswer} | time=${responseTime}ms`);
 
       if (room.answers.A && room.answers.B) {
         computeRoundResult(room);
@@ -1117,11 +1117,21 @@ wss.on("connection", (ws) => {
           return;
         }
 
-        const time = Number(data.time);
-        if (!Number.isFinite(time) || time < 0 || time > ANSWER_TIME_LIMIT_MS) {
+        // Le client Unity envoie le temps en secondes.
+        // On le convertit ici en millisecondes pour garder
+        // un format unique partout côté serveur.
+        const timeSeconds = Number(data.time);
+
+        if (
+          !Number.isFinite(timeSeconds) ||
+          timeSeconds < 0 ||
+          timeSeconds > (ANSWER_TIME_LIMIT_MS / 1000)
+        ) {
           send(ws, { type: "ERROR", message: "Temps invalide" });
           return;
         }
+
+        const timeMs = Math.round(timeSeconds * 1000);
 
         if (room.answers[info.id] !== null) {
           return;
@@ -1129,7 +1139,7 @@ wss.on("connection", (ws) => {
 
         room.answers[info.id] = {
           answer: data.answer,
-          time
+          time: timeMs
         };
 
         broadcast(room, {
@@ -1137,6 +1147,10 @@ wss.on("connection", (ws) => {
           roomCode: room.code,
           playerId: info.id
         });
+
+        log(
+          `PLAYER ANSWER -> ${info.id} | answer=${data.answer} | time=${timeSeconds.toFixed(3)}s | stored=${timeMs}ms`
+        );
 
         if (room.answers.A && room.answers.B) {
           computeRoundResult(room);
