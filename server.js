@@ -27,15 +27,10 @@ const clients = new Map();
 let waitingWorldPlayer = null;
 
 const VIDEO_PATHS = {
-  F_YES: "VIDEO/F_yes",
-  F_NO: "VIDEO/F_no",
-  B_YES: "VIDEO/B_yes",
-  B_NO: "VIDEO/B_no",
-  F_IDLE: "VIDEO/F_idle",
-  B_IDLE: "VIDEO/B_idle",
-  FINAL_F_WIN: "VIDEO/FINAL/F_win",
-  FINAL_B_WIN: "VIDEO/FINAL/B_win",
-  FINAL_DRAW: "VIDEO/FINAL/draw"
+  ...
+  FINAL_F_WIN: "VIDEO/Final/F_win",
+  FINAL_B_WIN: "VIDEO/Final/B_win",
+  FINAL_DRAW: "VIDEO/Final/draw"
 };
 
 const BOT_PROFILES = {
