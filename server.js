@@ -15,16 +15,15 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 const PORT = process.env.PORT || 3000;
-const ANSWER_TIME_LIMIT_MS = 8000;
-const PENALTY_RESULT_VIDEO_MS = 10000;
+const ANSWER_TIME_LIMIT_MS = 5000;
+const PENALTY_RESULT_VIDEO_MS = 8000;
 const QUESTION_AFTER_IDLE_DELAY_MS = 80;
 
 const REGULAR_SHOTS_PER_TEAM = 5;
+const REGULAR_TOTAL_SHOTS = REGULAR_SHOTS_PER_TEAM * 2;
 
 const rooms = new Map();
 const clients = new Map();
-
-let waitingWorldPlayer = null;
 
 const VIDEO_PATHS = {
   F_YES: "VIDEO/F_yes",
@@ -79,6 +78,12 @@ function safeSchoolLevel(value) {
     : "middle_school";
 }
 
+function safeQuestionDifficulty(value) {
+  return ["easy", "medium", "expert"].includes(value)
+    ? value
+    : "medium";
+}
+
 function safeBotDifficulty(value) {
   return ["easy", "medium", "expert"].includes(value)
     ? value
@@ -86,48 +91,34 @@ function safeBotDifficulty(value) {
 }
 
 function safeSubject(value) {
-  const v = String(value || "").trim().toLowerCase();
-
-  if (["math", "science", "languages", "geography", "history"].includes(v)) {
-    return v;
-  }
-
-  return "math";
+  return ["math", "science", "languages", "geography", "history", "french"].includes(value)
+    ? value
+    : "math";
 }
 
 function safeSubtopic(subject, value) {
-  const v = String(value || "").trim().toLowerCase();
-  const safeSubj = safeSubject(subject);
+  const subjectSafe = safeSubject(subject);
 
   const allowed = {
     math: ["calcul", "geometry", "probability"],
     science: ["physics", "chemistry", "biology"],
     languages: ["english", "french", "spanish"],
     geography: ["country", "sea", "land"],
-    history: ["conflicts", "civilisations", "politics"]
+    history: ["conflicts", "civilisations", "politics"],
+    french: ["grammar", "vocabulary", "reading"]
   };
 
-  const defaults = {
-    math: "calcul",
-    science: "physics",
-    languages: "english",
-    geography: "country",
-    history: "conflicts"
-  };
-
-  if (allowed[safeSubj] && allowed[safeSubj].includes(v)) {
-    return v;
-  }
-
-  return defaults[safeSubj];
+  const list = allowed[subjectSafe] || [];
+  return list.includes(value) ? value : list[0] || "calcul";
 }
 
 function getBotProfile(botDifficulty) {
   return BOT_PROFILES[safeBotDifficulty(botDifficulty)];
 }
 
-function loadQuestionsByPath(schoolLevel, subject, subtopic) {
+function loadQuestionsByPath(schoolLevel, questionDifficulty, subject, subtopic) {
   const level = safeSchoolLevel(schoolLevel);
+  const difficulty = safeQuestionDifficulty(questionDifficulty);
   const safeSubj = safeSubject(subject);
   const safeSub = safeSubtopic(safeSubj, subtopic);
 
@@ -135,6 +126,7 @@ function loadQuestionsByPath(schoolLevel, subject, subtopic) {
     __dirname,
     "questions",
     level,
+    difficulty,
     safeSubj,
     `${safeSub}.json`
   );
@@ -208,7 +200,6 @@ function broadcast(room, data) {
   ["A", "B"].forEach((id) => {
     const player = room.players[id];
     if (!player) return;
-    if (!player.ws) return;
     send(player.ws, data);
   });
 }
@@ -274,10 +265,10 @@ function getIdleVideoForShooter(room, shooterId) {
   const shooterTeam = getShooterTeam(room, shooterId);
 
   if (shooterTeam === "France") {
-    return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 7);
+    return getRandomVideoPath(VIDEO_PATHS.F_IDLE, 5);
   }
 
-  return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 7);
+  return getRandomVideoPath(VIDEO_PATHS.B_IDLE, 5);
 }
 
 function getPenaltyVideoForShooter(room, shooterId, goalScored) {
@@ -285,8 +276,8 @@ function getPenaltyVideoForShooter(room, shooterId, goalScored) {
 
   if (shooterTeam === "France") {
     return goalScored
-      ? getRandomVideoPath(VIDEO_PATHS.F_YES, 11)
-      : getRandomVideoPath(VIDEO_PATHS.F_NO, 11);
+      ? getRandomVideoPath(VIDEO_PATHS.F_YES, 10)
+      : getRandomVideoPath(VIDEO_PATHS.F_NO, 10);
   }
 
   return goalScored
@@ -503,7 +494,7 @@ function scheduleSoloBotAnswer(room) {
         playerId: botId
       });
 
-      log(`BOT ANSWER [${room.botDifficulty}] -> ${botId} | answer=${botAnswer} | time=${responseTime}ms`);
+      log(`BOT ANSWER [${room.botDifficulty}] -> ${botId} | answer=${botAnswer} | time=${responseTime}`);
 
       if (room.answers.A && room.answers.B) {
         computeRoundResult(room);
@@ -732,6 +723,8 @@ function createRoom(ws, selectedTeam, options = {}) {
 
   const room = {
     code,
+    mode: options.mode || "duo",
+
     players: {
       A: { ws, team: safeTeam },
       B: null
@@ -739,7 +732,7 @@ function createRoom(ws, selectedTeam, options = {}) {
 
     questions: options.questions || [],
     schoolLevel: options.schoolLevel || null,
-    botDifficulty: options.botDifficulty || "medium",
+    questionDifficulty: options.questionDifficulty || null,
     subject: options.subject || null,
     subtopic: options.subtopic || null,
 
@@ -768,7 +761,7 @@ function createRoom(ws, selectedTeam, options = {}) {
     suddenDeathPairGoals: { A: 0, B: 0 },
 
     isSolo: options.isSolo || false,
-    isWorld: options.isWorld || false,
+    botDifficulty: options.botDifficulty || "medium",
     botPlayerId: options.botPlayerId || "B"
   };
 
@@ -785,109 +778,40 @@ function createRoom(ws, selectedTeam, options = {}) {
   return room;
 }
 
-function handleFindWorldBattle(ws, data) {
-  const schoolLevel = safeSchoolLevel(data.schoolLevel);
-  const subject = safeSubject(data.subject);
-  const subtopic = safeSubtopic(subject, data.subtopic);
+function cleanupExistingClientRoom(ws) {
+  const info = clients.get(ws);
 
-  let selectedQuestions;
-  try {
-    selectedQuestions = loadQuestionsByPath(
-      schoolLevel,
-      subject,
-      subtopic
-    );
-  } catch (err) {
-    log("Erreur chargement questions world:", err);
-    send(ws, {
-      type: "ERROR",
-      message: "Impossible de charger les questions WORLD"
-    });
+  if (!info || !info.room) {
+    clients.set(ws, {});
     return;
   }
 
-  if (!waitingWorldPlayer) {
-    const room = createRoom(ws, "France", {
-      questions: cloneQuestions(selectedQuestions),
-      schoolLevel,
-      subject,
-      subtopic,
-      isWorld: true
-    });
-
-    waitingWorldPlayer = {
-      ws,
-      roomCode: room.code
-    };
-
-    send(ws, {
-      type: "WORLD_WAITING",
-      message: "En attente d'un adversaire..."
-    });
-
+  const room = rooms.get(info.room);
+  if (!room) {
+    clients.set(ws, {});
     return;
   }
 
-  const room = rooms.get(waitingWorldPlayer.roomCode);
-
-  if (!room || !room.players.A || !room.players.A.ws) {
-    waitingWorldPlayer = null;
-    send(ws, {
-      type: "ERROR",
-      message: "Matchmaking indisponible, réessaie"
-    });
-    return;
+  if (info.id === "A" && room.players.A && room.players.A.ws === ws) {
+    room.players.A = null;
   }
 
-  room.players.B = { ws, team: "Brazil" };
-  clients.set(ws, { room: room.code, id: "B" });
+  if (info.id === "B" && room.players.B && room.players.B.ws === ws) {
+    room.players.B = null;
+  }
 
-  send(ws, {
-    type: "ROOM_JOINED",
-    roomCode: room.code,
-    playerId: "B",
-    team: "Brazil"
-  });
+  if (!room.players.A && !room.players.B) {
+    clearQuestionTimeout(room);
+    clearTransitionTimeout(room);
+    clearQuestionDisplayTimeout(room);
+    clearBotAnswerTimeout(room);
+    rooms.delete(room.code);
+  }
 
-  send(room.players.A.ws, {
-    type: "OPPONENT_JOINED",
-    opponentTeam: "Brazil"
-  });
-
-  send(room.players.A.ws, {
-    type: "BATTLE_READY",
-    yourTeam: "France",
-    opponentTeam: "Brazil",
-    schoolLevel: room.schoolLevel,
-    subject: room.subject,
-    subtopic: room.subtopic
-  });
-
-  send(room.players.B.ws, {
-    type: "BATTLE_READY",
-    yourTeam: "Brazil",
-    opponentTeam: "France",
-    schoolLevel: room.schoolLevel,
-    subject: room.subject,
-    subtopic: room.subtopic
-  });
-
-  waitingWorldPlayer = null;
-
-  setTimeout(() => {
-    try {
-      startQuestion(room);
-    } catch (err) {
-      log("startQuestion world crash:", err);
-    }
-  }, 1000);
+  clients.set(ws, {});
 }
 
 function cleanupClient(ws) {
-  if (waitingWorldPlayer && waitingWorldPlayer.ws === ws) {
-    waitingWorldPlayer = null;
-  }
-
   const info = clients.get(ws);
 
   if (info && info.room) {
@@ -915,6 +839,23 @@ function cleanupClient(ws) {
   clients.delete(ws);
 }
 
+function findOpenWorldRoom() {
+  for (const room of rooms.values()) {
+    if (
+      room &&
+      room.mode === "world" &&
+      !room.isSolo &&
+      room.players &&
+      room.players.A &&
+      !room.players.B
+    ) {
+      return room;
+    }
+  }
+
+  return null;
+}
+
 wss.on("connection", (ws) => {
   clients.set(ws, {});
   send(ws, { type: "CONNECTED" });
@@ -924,8 +865,11 @@ wss.on("connection", (ws) => {
       const data = JSON.parse(msg.toString());
 
       if (data.type === "CREATE_BATTLE") {
+        cleanupExistingClientRoom(ws);
+
         const team = data.team === "Brazil" ? "Brazil" : "France";
         const schoolLevel = safeSchoolLevel(data.schoolLevel);
+        const questionDifficulty = safeQuestionDifficulty(data.questionDifficulty);
         const subject = safeSubject(data.subject);
         const subtopic = safeSubtopic(subject, data.subtopic);
 
@@ -933,6 +877,7 @@ wss.on("connection", (ws) => {
         try {
           selectedQuestions = loadQuestionsByPath(
             schoolLevel,
+            questionDifficulty,
             subject,
             subtopic
           );
@@ -940,14 +885,16 @@ wss.on("connection", (ws) => {
           log("Erreur chargement questions duo:", err);
           send(ws, {
             type: "ERROR",
-            message: "Impossible de charger les questions pour ce niveau / cette matière / ce sous-theme"
+            message: "Impossible de charger les questions pour ce niveau / cette matière"
           });
           return;
         }
 
         createRoom(ws, team, {
+          mode: "duo",
           questions: cloneQuestions(selectedQuestions),
           schoolLevel,
+          questionDifficulty,
           subject,
           subtopic
         });
@@ -956,8 +903,11 @@ wss.on("connection", (ws) => {
       }
 
       if (data.type === "CREATE_SOLO_BATTLE") {
+        cleanupExistingClientRoom(ws);
+
         const team = data.team === "Brazil" ? "Brazil" : "France";
         const schoolLevel = safeSchoolLevel(data.schoolLevel);
+        const questionDifficulty = safeQuestionDifficulty(data.questionDifficulty);
         const subject = safeSubject(data.subject);
         const subtopic = safeSubtopic(subject, data.subtopic);
         const botDifficulty = safeBotDifficulty(data.botDifficulty);
@@ -966,6 +916,7 @@ wss.on("connection", (ws) => {
         try {
           selectedQuestions = loadQuestionsByPath(
             schoolLevel,
+            questionDifficulty,
             subject,
             subtopic
           );
@@ -973,20 +924,30 @@ wss.on("connection", (ws) => {
           log("Erreur chargement questions solo:", err);
           send(ws, {
             type: "ERROR",
-            message: "Impossible de charger les questions pour ce niveau / cette matière / ce sous-theme"
+            message: "Impossible de charger les questions pour ce niveau / cette matière"
           });
           return;
         }
 
-        const room = createRoom(ws, team, {
+        createRoom(ws, team, {
+          mode: "solo",
           isSolo: true,
           botDifficulty,
           botPlayerId: "B",
           schoolLevel,
+          questionDifficulty,
           subject,
           subtopic,
           questions: cloneQuestions(selectedQuestions)
         });
+
+        const info = clients.get(ws);
+        const room = info && info.room ? rooms.get(info.room) : null;
+
+        if (!room) {
+          send(ws, { type: "ERROR", message: "Impossible de créer la room solo" });
+          return;
+        }
 
         room.players.B = {
           ws: null,
@@ -999,9 +960,10 @@ wss.on("connection", (ws) => {
           yourTeam: room.players.A.team,
           opponentTeam: room.players.B.team,
           schoolLevel,
-          botDifficulty,
+          questionDifficulty,
           subject,
-          subtopic
+          subtopic,
+          botDifficulty
         });
 
         send(room.players.A.ws, {
@@ -1009,6 +971,7 @@ wss.on("connection", (ws) => {
           yourTeam: room.players.A.team,
           opponentTeam: room.players.B.team,
           schoolLevel,
+          questionDifficulty,
           subject,
           subtopic
         });
@@ -1024,6 +987,96 @@ wss.on("connection", (ws) => {
         return;
       }
 
+      if (data.type === "FIND_WORLD_BATTLE") {
+        cleanupExistingClientRoom(ws);
+
+        const existingRoom = findOpenWorldRoom();
+
+        if (existingRoom) {
+          existingRoom.players.B = {
+            ws,
+            team: "Brazil"
+          };
+
+          clients.set(ws, { room: existingRoom.code, id: "B" });
+
+          send(ws, {
+            type: "ROOM_JOINED",
+            roomCode: existingRoom.code,
+            playerId: "B",
+            team: "Brazil"
+          });
+
+          send(existingRoom.players.A.ws, {
+            type: "OPPONENT_JOINED",
+            opponentTeam: "Brazil"
+          });
+
+          send(existingRoom.players.A.ws, {
+            type: "BATTLE_READY",
+            yourTeam: "France",
+            opponentTeam: "Brazil",
+            schoolLevel: existingRoom.schoolLevel,
+            questionDifficulty: existingRoom.questionDifficulty,
+            subject: existingRoom.subject,
+            subtopic: existingRoom.subtopic
+          });
+
+          send(existingRoom.players.B.ws, {
+            type: "BATTLE_READY",
+            yourTeam: "Brazil",
+            opponentTeam: "France",
+            schoolLevel: existingRoom.schoolLevel,
+            questionDifficulty: existingRoom.questionDifficulty,
+            subject: existingRoom.subject,
+            subtopic: existingRoom.subtopic
+          });
+
+          setTimeout(() => {
+            try {
+              startQuestion(existingRoom);
+            } catch (err) {
+              log("startQuestion world crash:", err);
+            }
+          }, 1000);
+
+          return;
+        }
+
+        let selectedQuestions;
+        try {
+          selectedQuestions = loadQuestionsByPath(
+            "middle_school",
+            "medium",
+            "math",
+            "calcul"
+          );
+        } catch (err) {
+          log("Erreur chargement questions world:", err);
+          send(ws, {
+            type: "ERROR",
+            message: "Impossible de charger les questions world"
+          });
+          return;
+        }
+
+        createRoom(ws, "France", {
+          mode: "world",
+          questions: cloneQuestions(selectedQuestions),
+          schoolLevel: "middle_school",
+          questionDifficulty: "medium",
+          subject: "math",
+          subtopic: "calcul"
+        });
+
+        send(ws, {
+          type: "WORLD_WAITING",
+          message: "En attente d'un adversaire..."
+        });
+
+        return;
+      }
+
       if (data.type === "JOIN_BATTLE") {
         const code = sanitizeRoomCode(data.roomCode);
         const room = rooms.get(code);
@@ -1033,10 +1086,17 @@ wss.on("connection", (ws) => {
           return;
         }
 
+        if (room.mode !== "duo") {
+          send(ws, { type: "ERROR", message: "Cette room n'accepte pas de rejoindre via code" });
+          return;
+        }
+
         if (room.players.B) {
           send(ws, { type: "ERROR", message: "Room complète" });
           return;
         }
+
+        cleanupExistingClientRoom(ws);
 
         const teamForB = getOppositeTeam(room.players.A.team);
 
@@ -1060,6 +1120,7 @@ wss.on("connection", (ws) => {
           yourTeam: room.players.A.team,
           opponentTeam: room.players.B.team,
           schoolLevel: room.schoolLevel,
+          questionDifficulty: room.questionDifficulty,
           subject: room.subject,
           subtopic: room.subtopic
         });
@@ -1069,6 +1130,7 @@ wss.on("connection", (ws) => {
           yourTeam: room.players.B.team,
           opponentTeam: room.players.A.team,
           schoolLevel: room.schoolLevel,
+          questionDifficulty: room.questionDifficulty,
           subject: room.subject,
           subtopic: room.subtopic
         });
@@ -1081,11 +1143,6 @@ wss.on("connection", (ws) => {
           }
         }, 1000);
 
-        return;
-      }
-
-      if (data.type === "FIND_WORLD_BATTLE") {
-        handleFindWorldBattle(ws, data);
         return;
       }
 
@@ -1117,21 +1174,11 @@ wss.on("connection", (ws) => {
           return;
         }
 
-        // Le client Unity envoie le temps en secondes.
-        // On le convertit ici en millisecondes pour garder
-        // un format unique partout côté serveur.
-        const timeSeconds = Number(data.time);
-
-        if (
-          !Number.isFinite(timeSeconds) ||
-          timeSeconds < 0 ||
-          timeSeconds > (ANSWER_TIME_LIMIT_MS / 1000)
-        ) {
+        const time = Number(data.time);
+        if (!Number.isFinite(time) || time < 0 || time > ANSWER_TIME_LIMIT_MS) {
           send(ws, { type: "ERROR", message: "Temps invalide" });
           return;
         }
-
-        const timeMs = Math.round(timeSeconds * 1000);
 
         if (room.answers[info.id] !== null) {
           return;
@@ -1139,7 +1186,7 @@ wss.on("connection", (ws) => {
 
         room.answers[info.id] = {
           answer: data.answer,
-          time: timeMs
+          time
         };
 
         broadcast(room, {
@@ -1147,10 +1194,6 @@ wss.on("connection", (ws) => {
           roomCode: room.code,
           playerId: info.id
         });
-
-        log(
-          `PLAYER ANSWER -> ${info.id} | answer=${data.answer} | time=${timeSeconds.toFixed(3)}s | stored=${timeMs}ms`
-        );
 
         if (room.answers.A && room.answers.B) {
           computeRoundResult(room);
