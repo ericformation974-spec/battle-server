@@ -116,9 +116,9 @@ function getBotProfile(botDifficulty) {
   return BOT_PROFILES[safeBotDifficulty(botDifficulty)];
 }
 
-function loadQuestionsByPath(schoolLevel, questionDifficulty, subject, subtopic) {
+// CORRIGÉ : questionDifficulty ne sert plus au chemin des fichiers
+function loadQuestionsByPath(schoolLevel, _questionDifficulty, subject, subtopic) {
   const level = safeSchoolLevel(schoolLevel);
-  const difficulty = safeQuestionDifficulty(questionDifficulty);
   const safeSubj = safeSubject(subject);
   const safeSub = safeSubtopic(safeSubj, subtopic);
 
@@ -126,10 +126,11 @@ function loadQuestionsByPath(schoolLevel, questionDifficulty, subject, subtopic)
     __dirname,
     "questions",
     level,
-    difficulty,
     safeSubj,
     `${safeSub}.json`
   );
+
+  log("Chargement questions:", filePath);
 
   if (!fs.existsSync(filePath)) {
     throw new Error(`Fichier de questions introuvable: ${filePath}`);
@@ -494,7 +495,7 @@ function scheduleSoloBotAnswer(room) {
         playerId: botId
       });
 
-      log(`BOT ANSWER [${room.botDifficulty}] -> ${botId} | answer=${botAnswer} | time=${responseTime}`);
+      log(`BOT ANSWER [${room.botDifficulty}] -> ${botId} | answer=${botAnswer} | time=${responseTime}ms`);
 
       if (room.answers.A && room.answers.B) {
         computeRoundResult(room);
@@ -1175,6 +1176,8 @@ wss.on("connection", (ws) => {
         }
 
         const time = Number(data.time);
+
+        // Le client doit envoyer en millisecondes
         if (!Number.isFinite(time) || time < 0 || time > ANSWER_TIME_LIMIT_MS) {
           send(ws, { type: "ERROR", message: "Temps invalide" });
           return;
